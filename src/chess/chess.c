@@ -1,6 +1,6 @@
 #include "chess/chess.h"
 
-int king_queen_directions[8][2] = 
+int directions[8][2] = 
 {
     {-1, -1},
     {-1, 0},
@@ -31,7 +31,7 @@ void move(Piece *piece, int x, int y)
     piece->posY = y;
 }
 
-void calcMove(Piece *piece, int posX, int posY, int last_dir[], int last_pos[], int res[]) 
+void calcMove(Piece *piece, int last_dir[], int last_pos[], int res[]) 
 {
     switch (piece->type) 
     {
@@ -40,20 +40,20 @@ void calcMove(Piece *piece, int posX, int posY, int last_dir[], int last_pos[], 
             {
                 last_dir[0] = -2;
                 last_dir[1] = -2;
-                res[0] = posX;
-                res[1] = posY;
+                res[0] = piece->posX;
+                res[1] = piece->posY;
             }
 
             else if (last_dir[0] == -2 && last_dir[1] == -2
-                && posX + king_queen_directions[0][0] < 8
-                && posX + king_queen_directions[0][0] >= 0
-                && posY + king_queen_directions[0][1] < 8
-                && posY + king_queen_directions[0][1] >= 0)
+                && piece->posX + directions[0][0] < 8
+                && piece->posX + directions[0][0] >= 0
+                && piece->posY + directions[0][1] < 8
+                && piece->posY + directions[0][1] >= 0)
             {
-                last_dir[0] = king_queen_directions[0][0];
-                last_dir[1] = king_queen_directions[0][1];
-                res[0] = posX + last_dir[0];
-                res[1] = posY + last_dir[1];
+                last_dir[0] = directions[0][0];
+                last_dir[1] = directions[0][1];
+                res[0] = piece->posX + last_dir[0];
+                res[1] = piece->posY + last_dir[1];
             } 
 
             else 
@@ -69,100 +69,30 @@ void calcMove(Piece *piece, int posX, int posY, int last_dir[], int last_pos[], 
                 {
                     if (reached) 
                     {
-                        if (posX + king_queen_directions[i][0] < 8
-                            && posX + king_queen_directions[i][0] >= 0
-                            && posY + king_queen_directions[i][1] < 8
-                            && posY + king_queen_directions[i][1] >= 0) 
+                        if (piece->posX + directions[i][0] < 8
+                            && piece->posX + directions[i][0] >= 0
+                            && piece->posY + directions[i][1] < 8
+                            && piece->posY + directions[i][1] >= 0) 
                         {
                             break;
                         }
                     }
 
-                    if (last_dir[0] == king_queen_directions[i][0] 
-                        && last_dir[1] == king_queen_directions[i][1]) 
+                    if (last_dir[0] == directions[i][0] 
+                        && last_dir[1] == directions[i][1]) 
                     {
                         reached = true;
                     }
                 }
-                last_dir[0] = king_queen_directions[i][0];
-                last_dir[1] = king_queen_directions[i][1];
-                res[0] = posX + last_dir[0];
-                res[1] = posY + last_dir[1];
+                last_dir[0] = directions[i][0];
+                last_dir[1] = directions[i][1];
+                res[0] = piece->posX + last_dir[0];
+                res[1] = piece->posY + last_dir[1];
             }
             break;
     
         case 'Q':
-            if (last_dir[0] == -2 && last_dir[1] == -2
-                && posX + king_queen_directions[0][0] < 8
-                && posX + king_queen_directions[0][0] >= 0
-                && posY + king_queen_directions[0][1] < 8
-                && posY + king_queen_directions[0][1] >= 0)
-            {
-                last_dir[0] = king_queen_directions[0][0];
-                last_dir[1] = king_queen_directions[0][1];
-                res[0] = posX + last_dir[0];
-                res[1] = posY + last_dir[1];
-            } 
-
-            else 
-            {
-                int i, posX_temp, posY_temp;
-                bool reached = false;
-                bool found = false;
-
-                for (i = 0; i < 8; i++) 
-                {
-                    if ((last_dir[0] != king_queen_directions[i][0]
-                        || last_dir[1] != king_queen_directions[i][1])
-                        && !reached) 
-                    {
-                        continue;
-                    }
-
-                    posX_temp = posX;
-                    posY_temp = posY;
-
-                    while (posX_temp < 8 && posX_temp >= 0
-                        && posY_temp < 8 && posY_temp >= 0)
-                    {
-                        if (reached && !(posX == posX_temp && posY == posY_temp)) 
-                        {
-                            found = true;
-                            break;
-                        }
-
-                        else if (last_pos[0] == posX_temp
-                            && last_pos[1] == posY_temp
-                            && reached == false) 
-                        {
-                            reached = true;
-                        }
-
-                        posX_temp += king_queen_directions[i][0];
-                        posY_temp += king_queen_directions[i][1];
-                    }
-                    
-                    if (found) 
-                    {
-                        break;
-                    }
-                }
-                if (!found) 
-                {
-                    last_dir[0] = -2;
-                    last_dir[1] = -2;
-                    res[0] = posX;
-                    res[1] = posY;
-                }
-
-                else
-                {
-                    last_dir[0] = king_queen_directions[i][0];
-                    last_dir[1] = king_queen_directions[i][1];
-                    res[0] = posX_temp;
-                    res[1] = posY_temp;
-                }
-            }
+            calcMove_aux(piece, 0, 1, last_dir, last_pos, res);
             break; 
 
         default:
@@ -171,6 +101,82 @@ void calcMove(Piece *piece, int posX, int posY, int last_dir[], int last_pos[], 
             res[1] = -3;
             last_dir[1] = -3;
             break;
+    }
+}
+
+void calcMove_aux(Piece* piece, int start, int step, int last_dir[], int last_pos[], int res[]) 
+{
+    if (last_dir[0] == -2 && last_dir[1] == -2
+        && piece->posX + directions[start][0] < 8
+        && piece->posX + directions[start][0] >= 0
+        && piece->posY + directions[start][1] < 8
+        && piece->posY + directions[start][1] >= 0)
+    {
+        last_dir[0] = directions[start][0];
+        last_dir[1] = directions[start][1];
+        res[0] = piece->posX + last_dir[0];
+        res[1] = piece->posY + last_dir[1];
+    } 
+
+    else 
+    {
+        int i, posX_temp, posY_temp;
+        bool reached = false;
+        bool found = false;
+
+        for (i = start; i < 8; i += step) 
+        {
+            if ((last_dir[0] != directions[i][0]
+                || last_dir[1] != directions[i][1])
+                && !reached) 
+            {
+                continue;
+            }
+
+            posX_temp = piece->posX;
+            posY_temp = piece->posY;
+
+            while (posX_temp < 8 && posX_temp >= 0
+                && posY_temp < 8 && posY_temp >= 0)
+            {
+                if (reached 
+                    && !(piece->posX == posX_temp && piece->posY == posY_temp)) 
+                {
+                    found = true;
+                    break;
+                }
+
+                else if (last_pos[0] == posX_temp
+                    && last_pos[1] == posY_temp
+                    && reached == false) 
+                {
+                    reached = true;
+                }
+
+                posX_temp += directions[i][0];
+                posY_temp += directions[i][1];
+            }
+            
+            if (found) 
+            {
+                break;
+            }
+        }
+        if (!found) 
+        {
+            last_dir[0] = -2;
+            last_dir[1] = -2;
+            res[0] = piece->posX;
+            res[1] = piece->posY;
+        }
+
+        else
+        {
+            last_dir[0] = directions[i][0];
+            last_dir[1] = directions[i][1];
+            res[0] = posX_temp;
+            res[1] = posY_temp;
+        }
     }
 }
 
