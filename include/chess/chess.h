@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-int king_valid_moves[8][2];
+int king_queen_directions[8][2];
 
 // Piece
 
@@ -19,7 +19,7 @@ typedef struct Piece
 
 Piece* create_piece(char, int, int);
 void move(Piece*, int, int);
-void calcMove(Piece*, int, int, int[], int[]);
+void calcMove(Piece*, int, int, int[], int[], int[]);
 
 // State
 
