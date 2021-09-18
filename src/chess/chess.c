@@ -131,6 +131,10 @@ void calcMove_aux(Piece* piece, int start, int step, int last_dir[], int last_po
         int i, posX_temp, posY_temp;
         bool reached = false;
         bool found = false;
+        if (last_dir[0] == -2 && last_dir[1] == -2) 
+        {
+            reached = true;
+        }
 
         for (i = start; i < 8; i += step) 
         {
