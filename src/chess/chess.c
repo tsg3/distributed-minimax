@@ -12,6 +12,18 @@ int directions[8][2] =
     {0, -1}
 };
 
+int knight_movements[8][2] = 
+{
+    {1, 2},
+    {2, 1},
+    {2, -1},
+    {1, -2},
+    {-1, -2},
+    {-2, -1},
+    {-2, 1},
+    {-1, 2}
+};
+
 // Piece
 
 Piece* create_piece(char type, int x, int y)
@@ -36,71 +48,49 @@ void calcMove(Piece *piece, int last_dir[], int last_pos[], int res[])
     switch (piece->type) 
     {
         case 'K':
-            if (last_dir[0] == 1 && last_dir[1] == 1)
-            {
-                last_dir[0] = -2;
-                last_dir[1] = -2;
-                res[0] = piece->posX;
-                res[1] = piece->posY;
-            }
-
-            else if (last_dir[0] == -2 && last_dir[1] == -2
-                && piece->posX + directions[0][0] < 8
-                && piece->posX + directions[0][0] >= 0
-                && piece->posY + directions[0][1] < 8
-                && piece->posY + directions[0][1] >= 0)
-            {
-                last_dir[0] = directions[0][0];
-                last_dir[1] = directions[0][1];
-                res[0] = piece->posX + last_dir[0];
-                res[1] = piece->posY + last_dir[1];
-            } 
-
-            else 
-            {
-                int i;
-                bool reached = false;
-                if (last_dir[0] == -2 && last_dir[1] == -2) 
-                {
-                    reached = true;
-                }
-
-                for (i = 0; i < 8; i++) 
-                {
-                    if (reached) 
-                    {
-                        if (piece->posX + directions[i][0] < 8
-                            && piece->posX + directions[i][0] >= 0
-                            && piece->posY + directions[i][1] < 8
-                            && piece->posY + directions[i][1] >= 0) 
-                        {
-                            break;
-                        }
-                    }
-
-                    if (last_dir[0] == directions[i][0] 
-                        && last_dir[1] == directions[i][1]) 
-                    {
-                        reached = true;
-                    }
-                }
-                last_dir[0] = directions[i][0];
-                last_dir[1] = directions[i][1];
-                res[0] = piece->posX + last_dir[0];
-                res[1] = piece->posY + last_dir[1];
-            }
+            calcMove_single_aux(piece, (int*)directions, last_dir, res);
             break;
     
         case 'Q':
-            calcMove_aux(piece, 0, 1, last_dir, last_pos, res);
+            calcMove_extended_aux(piece, 0, 1, last_dir, last_pos, res);
             break; 
 
         case 'B':
-            calcMove_aux(piece, 0, 2, last_dir, last_pos, res);
+            calcMove_extended_aux(piece, 0, 2, last_dir, last_pos, res);
             break; 
 
+        case 'N':
+            calcMove_single_aux(piece, (int*)knight_movements, last_dir, res);
+            break;
+
         case 'R':
-            calcMove_aux(piece, 1, 2, last_dir, last_pos, res);
+            calcMove_extended_aux(piece, 1, 2, last_dir, last_pos, res);
+            break; 
+
+        case 'P':
+            if (last_dir[1] == -2 && piece->posY == 1) 
+            {
+                last_dir[1] = 2;
+                res[0] = piece->posX;
+                res[1] = 3;
+            }
+
+            else
+            {
+                if (piece->posY < 7 && last_dir[1] != 1) 
+                {
+                    last_dir[1] = 1;
+                    res[0] = piece->posX;
+                    res[1] = piece->posY + 1;
+                }
+
+                else
+                {
+                    last_dir[1] = -2;
+                    res[0] = piece->posX;
+                    res[1] = piece->posY;
+                }
+            }
             break; 
 
         default:
@@ -112,7 +102,7 @@ void calcMove(Piece *piece, int last_dir[], int last_pos[], int res[])
     }
 }
 
-void calcMove_aux(Piece* piece, int start, int step, int last_dir[], int last_pos[], int res[]) 
+void calcMove_extended_aux(Piece* piece, int start, int step, int last_dir[], int last_pos[], int res[]) 
 {
     if (last_dir[0] == -2 && last_dir[1] == -2
         && piece->posX + directions[start][0] < 8
@@ -189,6 +179,63 @@ void calcMove_aux(Piece* piece, int start, int step, int last_dir[], int last_po
             res[0] = posX_temp;
             res[1] = posY_temp;
         }
+    }
+}
+
+void calcMove_single_aux(Piece* piece, int* movements, int last_dir[], int res[])
+{
+    if (last_dir[0] == 0 && last_dir[1] == -1)
+    {
+        last_dir[0] = -2;
+        last_dir[1] = -2;
+        res[0] = piece->posX;
+        res[1] = piece->posY;
+    }
+
+    else if (last_dir[0] == -2 && last_dir[1] == -2
+        && piece->posX + movements[0] < 8
+        && piece->posX + movements[0] >= 0
+        && piece->posY + movements[1] < 8
+        && piece->posY + movements[1] >= 0)
+    {
+        last_dir[0] = movements[0];
+        last_dir[1] = movements[1];
+        res[0] = piece->posX + last_dir[0];
+        res[1] = piece->posY + last_dir[1];
+    } 
+
+    else 
+    {
+        int i;
+        bool reached = false;
+        if (last_dir[0] == -2 && last_dir[1] == -2) 
+        {
+            reached = true;
+        }
+
+        for (i = 0; i < 8; i++) 
+        {
+            if (reached) 
+            {
+                if (piece->posX + movements[2 * i] < 8
+                    && piece->posX + movements[2 * i] >= 0
+                    && piece->posY + movements[2 * i + 1] < 8
+                    && piece->posY + movements[2 * i + 1] >= 0) 
+                {
+                    break;
+                }
+            }
+
+            if (last_dir[0] == movements[2 * i] 
+                && last_dir[1] == movements[2 * i + 1]) 
+            {
+                reached = true;
+            }
+        }
+        last_dir[0] = movements[2 * i];
+        last_dir[1] = movements[2 * i + 1];
+        res[0] = piece->posX + last_dir[0];
+        res[1] = piece->posY + last_dir[1];
     }
 }
 
