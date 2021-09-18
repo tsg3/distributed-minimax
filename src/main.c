@@ -3,7 +3,7 @@
 
 int main () 
 {
-    Piece* piece = create_piece('Q', 2, 3);
+    Piece* piece = create_piece('Q', 0, 0);
     int last_dir[2] = {-2, -2};
     int last_value[2] = {-2, -2};
     int res[2] = {-2, -2};

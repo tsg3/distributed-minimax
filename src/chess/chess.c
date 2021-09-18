@@ -5,11 +5,11 @@ int directions[8][2] =
     {-1, -1},
     {-1, 0},
     {-1, 1},
-    {0, -1},
     {0, 1},
-    {1, -1},
+    {1, 1},
     {1, 0},
-    {1, 1}
+    {1, -1},
+    {0, -1}
 };
 
 // Piece
@@ -93,6 +93,14 @@ void calcMove(Piece *piece, int last_dir[], int last_pos[], int res[])
     
         case 'Q':
             calcMove_aux(piece, 0, 1, last_dir, last_pos, res);
+            break; 
+
+        case 'B':
+            calcMove_aux(piece, 0, 2, last_dir, last_pos, res);
+            break; 
+
+        case 'R':
+            calcMove_aux(piece, 1, 2, last_dir, last_pos, res);
             break; 
 
         default:
