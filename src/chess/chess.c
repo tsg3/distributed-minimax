@@ -68,29 +68,38 @@ void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int re
             break; 
 
         case 'P':
-            if (last_dir[1] == -2 && piece->posY == 1) 
+            if (state->turn)
             {
-                last_dir[1] = 2;
-                res[0] = piece->posX;
-                res[1] = 3;
+                calcMove_pawn_aux(piece, 1, 1, last_dir, res);
             }
 
             else
             {
-                if (piece->posY < 7 && last_dir[1] != 1) 
-                {
-                    last_dir[1] = 1;
-                    res[0] = piece->posX;
-                    res[1] = piece->posY + 1;
-                }
-
-                else
-                {
-                    last_dir[1] = -2;
-                    res[0] = piece->posX;
-                    res[1] = piece->posY;
-                }
+                calcMove_pawn_aux(piece, 6, -1, last_dir, res);
             }
+            // if (last_dir[1] == -2 && piece->posY == 1) 
+            // {
+            //     last_dir[1] = 2;
+            //     res[0] = piece->posX;
+            //     res[1] = 3;
+            // }
+
+            // else
+            // {
+            //     if (piece->posY < 7 && last_dir[1] != 1) 
+            //     {
+            //         last_dir[1] = 1;
+            //         res[0] = piece->posX;
+            //         res[1] = piece->posY + 1;
+            //     }
+
+            //     else
+            //     {
+            //         last_dir[1] = -2;
+            //         res[0] = piece->posX;
+            //         res[1] = piece->posY;
+            //     }
+            // }
             break; 
 
         default:
@@ -256,6 +265,34 @@ void calcMove_single_aux(Piece* piece, int* movements, int last_dir[], int res[]
         last_dir[1] = movements[2 * i + 1];
         res[0] = piece->posX + last_dir[0];
         res[1] = piece->posY + last_dir[1];
+    }
+}
+
+void calcMove_pawn_aux(Piece* piece, int initial_pos, int dir, int last_dir[], int res[])
+{
+    if (last_dir[1] == -2 && piece->posY == initial_pos) 
+    {
+        last_dir[1] = 2;
+        res[0] = piece->posX;
+        res[1] = initial_pos + 2 * dir;
+    }
+
+    else
+    {
+        bool range = initial_pos == 1 ? piece->posY < 7 : piece->posY > 0;
+        if (range && last_dir[1] != initial_pos) 
+        {
+            last_dir[1] = initial_pos;
+            res[0] = piece->posX;
+            res[1] = piece->posY + dir;
+        }
+
+        else
+        {
+            last_dir[1] = -2;
+            res[0] = piece->posX;
+            res[1] = piece->posY;
+        }
     }
 }
 
