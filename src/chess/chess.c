@@ -43,7 +43,7 @@ void move(Piece *piece, int x, int y)
     piece->posY = y;
 }
 
-void calcMove(Piece *piece, int last_dir[], int last_pos[], int res[]) 
+void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int res[]) 
 {
     switch (piece->type) 
     {
@@ -52,11 +52,11 @@ void calcMove(Piece *piece, int last_dir[], int last_pos[], int res[])
             break;
     
         case 'Q':
-            calcMove_extended_aux(piece, 0, 1, last_dir, last_pos, res);
+            calcMove_extended_aux(state, piece, 0, 1, last_dir, last_pos, res);
             break; 
 
         case 'B':
-            calcMove_extended_aux(piece, 0, 2, last_dir, last_pos, res);
+            calcMove_extended_aux(state, piece, 0, 2, last_dir, last_pos, res);
             break; 
 
         case 'N':
@@ -64,7 +64,7 @@ void calcMove(Piece *piece, int last_dir[], int last_pos[], int res[])
             break;
 
         case 'R':
-            calcMove_extended_aux(piece, 1, 2, last_dir, last_pos, res);
+            calcMove_extended_aux(state, piece, 1, 2, last_dir, last_pos, res);
             break; 
 
         case 'P':
@@ -102,13 +102,15 @@ void calcMove(Piece *piece, int last_dir[], int last_pos[], int res[])
     }
 }
 
-void calcMove_extended_aux(Piece* piece, int start, int step, int last_dir[], int last_pos[], int res[]) 
+void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int last_dir[], int last_pos[], int res[]) 
 {
     if (last_dir[0] == -2 && last_dir[1] == -2
         && piece->posX + directions[start][0] < 8
         && piece->posX + directions[start][0] >= 0
         && piece->posY + directions[start][1] < 8
-        && piece->posY + directions[start][1] >= 0)
+        && piece->posY + directions[start][1] >= 0
+        && check_obstacle(state, 
+            piece->posX + directions[start][0], piece->posY + directions[start][1]))
     {
         last_dir[0] = directions[start][0];
         last_dir[1] = directions[start][1];
@@ -121,6 +123,7 @@ void calcMove_extended_aux(Piece* piece, int start, int step, int last_dir[], in
         int i, posX_temp, posY_temp;
         bool reached = false;
         bool found = false;
+        int last_obstacle_check;
         if (last_dir[0] == -2 && last_dir[1] == -2) 
         {
             reached = true;
@@ -137,18 +140,25 @@ void calcMove_extended_aux(Piece* piece, int start, int step, int last_dir[], in
 
             posX_temp = piece->posX;
             posY_temp = piece->posY;
+            last_obstacle_check = 0;
 
             while (posX_temp < 8 && posX_temp >= 0
                 && posY_temp < 8 && posY_temp >= 0)
             {
                 if (reached 
-                    && !(piece->posX == posX_temp && piece->posY == posY_temp)) 
+                    && !(piece->posX == posX_temp && piece->posY == posY_temp)
+                    && last_obstacle_check != 2) 
                 {
                     found = true;
                     break;
                 }
 
-                else if (last_pos[0] == posX_temp
+                if (last_obstacle_check == 2)
+                {
+                    break;
+                }
+
+                if (last_pos[0] == posX_temp
                     && last_pos[1] == posY_temp
                     && reached == false) 
                 {
@@ -157,6 +167,16 @@ void calcMove_extended_aux(Piece* piece, int start, int step, int last_dir[], in
 
                 posX_temp += directions[i][0];
                 posY_temp += directions[i][1];
+
+                if (last_obstacle_check == 1)
+                {
+                    last_obstacle_check = 2;
+                }
+                
+                else
+                {
+                    last_obstacle_check = check_obstacle(state, posX_temp, posY_temp);
+                }
             }
             
             if (found) 
@@ -239,6 +259,17 @@ void calcMove_single_aux(Piece* piece, int* movements, int last_dir[], int res[]
     }
 }
 
+State* create_state(bool turn)
+{
+    State* state = (State*)malloc(sizeof(State));
+    state->whitePieces = NULL;
+    state->blackPieces = NULL;
+    state->value = -2;
+    state->turn = turn;
+
+    return state;
+}
+
 // State
 
 int get_value(State* state)
@@ -246,6 +277,7 @@ int get_value(State* state)
     return state->value;
 }
 
+// Not finished
 void calc_value(State* state, bool player)
 {
     // Set players
@@ -274,4 +306,42 @@ void calc_value(State* state, bool player)
     {
         temp = temp->next;
     }
+}
+
+int check_obstacle(State* state, int x, int y)
+{
+    int obstacle = 1;
+    Piece* pieces_temp = state->turn ? state->whitePieces : state->blackPieces;
+
+    while (pieces_temp != NULL)
+    {
+        if (pieces_temp->posX == x && pieces_temp->posY == y)
+        {
+            obstacle = 2;
+            break;
+        }
+
+        pieces_temp = pieces_temp->next;
+    }
+
+    if(obstacle == 2)
+    {
+        return 2;
+    }
+
+    obstacle = 0;
+    pieces_temp = state->turn ? state->blackPieces : state->whitePieces;
+
+    while (pieces_temp != NULL)
+    {
+        if (pieces_temp->posX == x && pieces_temp->posY == y)
+        {
+            obstacle = 1;
+            break;
+        }
+
+        pieces_temp = pieces_temp->next;
+    }
+
+    return obstacle;
 }
