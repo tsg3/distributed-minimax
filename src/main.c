@@ -20,6 +20,10 @@ int main ()
     piece_b_2->next = piece_b_3;
     Piece* piece_b_4 = create_piece('P', 3, 6);
     piece_b_3->next = piece_b_4;
+    Piece* piece_b_5 = create_piece('N', 1, 4);
+    piece_b_4->next = piece_b_5;
+    Piece* piece_b_6 = create_piece('N', 1, 0);
+    piece_b_5->next = piece_b_6;
     state->whitePieces = piece_w_1;
     state->blackPieces = piece_b_1;
 
@@ -27,9 +31,9 @@ int main ()
     int last_pos[2] = {-2, -2};
     int res[2] = {-2, -2};
 
-    while (piece_b_2->posX != res[0] || piece_b_2->posY != res[1])
+    while (piece_b_6->posX != res[0] || piece_b_6->posY != res[1])
     {
-        calcMove(state, piece_b_2, last_dir, last_pos, res);
+        calcMove(state, piece_b_6, last_dir, last_pos, res);
         printf("%d %d -> %d %d\n", last_dir[0], last_dir[1], res[0], res[1]);
 
         if (res[0] == -3) {

@@ -48,7 +48,7 @@ void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int re
     switch (piece->type) 
     {
         case 'K':
-            calcMove_single_aux(piece, (int*)directions, last_dir, res);
+            calcMove_single_aux(state, piece, (int*)directions, last_dir, res);
             break;
     
         case 'Q':
@@ -60,7 +60,7 @@ void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int re
             break; 
 
         case 'N':
-            calcMove_single_aux(piece, (int*)knight_movements, last_dir, res);
+            calcMove_single_aux(state, piece, (int*)knight_movements, last_dir, res);
             break;
 
         case 'R':
@@ -180,7 +180,7 @@ void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int 
     }
 }
 
-void calcMove_single_aux(Piece* piece, int* movements, int last_dir[], int res[])
+void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_dir[], int res[])
 {
     if (last_dir[0] == 0 && last_dir[1] == -1)
     {
@@ -194,7 +194,8 @@ void calcMove_single_aux(Piece* piece, int* movements, int last_dir[], int res[]
         && piece->posX + movements[0] < 8
         && piece->posX + movements[0] >= 0
         && piece->posY + movements[1] < 8
-        && piece->posY + movements[1] >= 0)
+        && piece->posY + movements[1] >= 0
+        && check_obstacle(state, piece->posX + movements[0], piece->posY + movements[1]) != 2)
     {
         last_dir[0] = movements[0];
         last_dir[1] = movements[1];
@@ -218,7 +219,9 @@ void calcMove_single_aux(Piece* piece, int* movements, int last_dir[], int res[]
                 if (piece->posX + movements[2 * i] < 8
                     && piece->posX + movements[2 * i] >= 0
                     && piece->posY + movements[2 * i + 1] < 8
-                    && piece->posY + movements[2 * i + 1] >= 0) 
+                    && piece->posY + movements[2 * i + 1] >= 0
+                    && check_obstacle(state, piece->posX + movements[2 * i], 
+                        piece->posY + movements[2 * i + 1]) != 2) 
                 {
                     break;
                 }
@@ -230,10 +233,21 @@ void calcMove_single_aux(Piece* piece, int* movements, int last_dir[], int res[]
                 reached = true;
             }
         }
-        last_dir[0] = movements[2 * i];
-        last_dir[1] = movements[2 * i + 1];
-        res[0] = piece->posX + last_dir[0];
-        res[1] = piece->posY + last_dir[1];
+        if (i == 8) 
+        {
+            last_dir[0] = -2;
+            last_dir[1] = -2;
+            res[0] = piece->posX;
+            res[1] = piece->posY;
+        }
+
+        else
+        {
+            last_dir[0] = movements[2 * i];
+            last_dir[1] = movements[2 * i + 1];
+            res[0] = piece->posX + last_dir[0];
+            res[1] = piece->posY + last_dir[1];
+        }
     }
 }
 

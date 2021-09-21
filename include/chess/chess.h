@@ -32,7 +32,7 @@ State* create_state(bool);
 void move(Piece*, int, int);
 void calcMove(State*, Piece*, int[], int[], int[]);
 void calcMove_extended_aux(State*, Piece*, int, int, int[], int[], int[]);
-void calcMove_single_aux(Piece*, int*, int[], int[]);
+void calcMove_single_aux(State*, Piece*, int*, int[], int[]);
 void calcMove_pawn_aux(State*, Piece*, int[], int[]);
 
 int get_value(State* state);
