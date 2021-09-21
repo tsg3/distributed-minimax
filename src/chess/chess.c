@@ -69,29 +69,6 @@ void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int re
 
         case 'P':
             calcMove_pawn_aux(state, piece, last_dir, res);
-            // if (last_dir[1] == -2 && piece->posY == 1) 
-            // {
-            //     last_dir[1] = 2;
-            //     res[0] = piece->posX;
-            //     res[1] = 3;
-            // }
-
-            // else
-            // {
-            //     if (piece->posY < 7 && last_dir[1] != 1) 
-            //     {
-            //         last_dir[1] = 1;
-            //         res[0] = piece->posX;
-            //         res[1] = piece->posY + 1;
-            //     }
-
-            //     else
-            //     {
-            //         last_dir[1] = -2;
-            //         res[0] = piece->posX;
-            //         res[1] = piece->posY;
-            //     }
-            // }
             break; 
 
         default:
@@ -262,25 +239,6 @@ void calcMove_single_aux(Piece* piece, int* movements, int last_dir[], int res[]
 
 void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[])
 {
-    // int initial_pos = state->turn == true ? 1 : 6;
-    // int dir = state->turn == true ? 1 : -1;
-
-    // if (last_dir[1] == -2 && piece->posY == initial_pos) 
-    // {
-    //     last_dir[1] = 2;
-    //     res[0] = piece->posX;
-    //     res[1] = initial_pos + 2 * dir;
-    // }
-
-    // else
-    // {
-    //     bool range = state->turn == true ? piece->posY < 7 : piece->posY > 0;
-    //     if (range && last_dir[1] != initial_pos) 
-    //     {
-    //         last_dir[1] = initial_pos;
-    //         res[0] = piece->posX;
-    //         res[1] = piece->posY + dir;
-    //     }
     int initial_pos = state->turn == true ? 1 : 6;
     int dir = state->turn == true ? 1 : -1;
     if (last_dir[0] == -2)
