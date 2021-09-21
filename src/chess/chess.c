@@ -68,15 +68,7 @@ void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int re
             break; 
 
         case 'P':
-            if (state->turn)
-            {
-                calcMove_pawn_aux(piece, 1, 1, last_dir, res);
-            }
-
-            else
-            {
-                calcMove_pawn_aux(piece, 6, -1, last_dir, res);
-            }
+            calcMove_pawn_aux(state, piece, last_dir, res);
             // if (last_dir[1] == -2 && piece->posY == 1) 
             // {
             //     last_dir[1] = 2;
@@ -119,7 +111,7 @@ void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int 
         && piece->posY + directions[start][1] < 8
         && piece->posY + directions[start][1] >= 0
         && check_obstacle(state, 
-            piece->posX + directions[start][0], piece->posY + directions[start][1]))
+            piece->posX + directions[start][0], piece->posY + directions[start][1]) != 2)
     {
         last_dir[0] = directions[start][0];
         last_dir[1] = directions[start][1];
@@ -268,27 +260,79 @@ void calcMove_single_aux(Piece* piece, int* movements, int last_dir[], int res[]
     }
 }
 
-void calcMove_pawn_aux(Piece* piece, int initial_pos, int dir, int last_dir[], int res[])
+void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[])
 {
-    if (last_dir[1] == -2 && piece->posY == initial_pos) 
+    // int initial_pos = state->turn == true ? 1 : 6;
+    // int dir = state->turn == true ? 1 : -1;
+
+    // if (last_dir[1] == -2 && piece->posY == initial_pos) 
+    // {
+    //     last_dir[1] = 2;
+    //     res[0] = piece->posX;
+    //     res[1] = initial_pos + 2 * dir;
+    // }
+
+    // else
+    // {
+    //     bool range = state->turn == true ? piece->posY < 7 : piece->posY > 0;
+    //     if (range && last_dir[1] != initial_pos) 
+    //     {
+    //         last_dir[1] = initial_pos;
+    //         res[0] = piece->posX;
+    //         res[1] = piece->posY + dir;
+    //     }
+    int initial_pos = state->turn == true ? 1 : 6;
+    int dir = state->turn == true ? 1 : -1;
+    if (last_dir[0] == -2)
+    {
+        last_dir[0] = 0;
+    }
+
+    if (last_dir[1] == -2 && piece->posY == initial_pos
+        && check_obstacle(state, piece->posX, piece->posY + dir) == 0
+        && check_obstacle(state, piece->posX, piece->posY + 2 * dir) == 0) 
     {
         last_dir[1] = 2;
         res[0] = piece->posX;
-        res[1] = initial_pos + 2 * dir;
+        res[1] = piece->posY + 2 * dir;
     }
 
     else
     {
-        bool range = initial_pos == 1 ? piece->posY < 7 : piece->posY > 0;
-        if (range && last_dir[1] != initial_pos) 
+        bool range = state->turn == true ? piece->posY < 7 : piece->posY > 0;
+        bool y_pos_check = piece->posY + dir < 8 && piece->posY + dir >= 0;
+
+        if (range && (last_dir[1] == 2 || last_dir[1] == -2)
+            && check_obstacle(state, piece->posX, piece->posY + dir) == 0) 
         {
-            last_dir[1] = initial_pos;
+            last_dir[1] = dir;
             res[0] = piece->posX;
+            res[1] = piece->posY + dir;
+        }
+
+        else if (piece->posX + dir < 8 && piece->posX + dir >= 0 && y_pos_check
+            && check_obstacle(state, piece->posX + dir, piece->posY + dir) == 1
+            && last_dir[0] == 0)
+        {
+            last_dir[0] = dir;
+            last_dir[1] = dir;
+            res[0] = piece->posX + dir;
+            res[1] = piece->posY + dir;
+        }
+
+        else if (piece->posX - dir < 8 && piece->posX - dir >= 0 && y_pos_check
+            && check_obstacle(state, piece->posX - dir, piece->posY + dir) == 1
+            && (last_dir[0] == dir || last_dir[0] == 0))
+        {
+            last_dir[0] = -dir;
+            last_dir[1] = dir;
+            res[0] = piece->posX - dir;
             res[1] = piece->posY + dir;
         }
 
         else
         {
+            last_dir[0] = -2;
             last_dir[1] = -2;
             res[0] = piece->posX;
             res[1] = piece->posY;
