@@ -333,8 +333,7 @@ void move_piece(State* state, Piece* piece, int x, int y)
         delete_piece(state, temp, !state->turn);
     }
 
-    piece->posX = x;
-    piece->posY = y;
+    move (piece, x, y);
 }
 
 State* create_state(bool turn)
@@ -546,8 +545,87 @@ bool calc_value(State* state, bool check_posibilities)
     }
 
     bool possibility = false;
+    temp = currentPlayer;
+    State* temp_state;
+    Piece* associated_piece; 
 
-    return possibility; // change
+    while (temp != NULL)
+    {
+        last_dir[0] = -2;
+        last_dir[1] = -2;
+        last_pos[0] = -2;
+        last_pos[1] = -2;
+        res[0] = -2;
+        res[1] = -2;
+        
+        while (true)
+        {
+            calcMove(state, temp, last_dir, last_pos, res);
+
+            if (res[0] == -3
+                || (temp->posX == res[0] && temp->posY == res[1])) {
+                break;
+            }
+
+            temp_state = create_copy(state);
+            associated_piece = temp_state->turn 
+                ? temp_state->whitePieces : temp_state->blackPieces;
+
+            while (associated_piece != NULL)
+            {
+                if (associated_piece->posX == temp->posX
+                    && associated_piece->posY == temp->posY)
+                {
+                    break;
+                }
+
+                associated_piece = associated_piece->next;
+            }
+
+            move_piece(temp_state, associated_piece, res[0], res[1]);
+
+            if (!calc_value(temp_state, false))
+            {
+                possibility = true;
+                break;
+            }
+
+            delete_state(temp_state);
+
+            last_pos[0] = res[0];
+            last_pos[1] = res[1];
+        }
+
+        if (possibility)
+        {
+            break;
+        }
+
+        temp = temp->next;
+    }
+
+    if (possibility)
+    {
+        return false;
+    }
+
+    else if (!attacked && !possibility)
+    {
+        state->value = 0;
+        return true;
+    }
+
+    else if (state->turn == player)
+    {
+        state->value = -1;
+        return true;
+    }
+
+    else
+    {
+        state->value = 1;
+        return true;
+    }
 }
 
 int check_obstacle(State* state, int x, int y)

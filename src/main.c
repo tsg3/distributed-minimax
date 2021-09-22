@@ -3,7 +3,7 @@
 
 int main () 
 {
-    player = true;
+    player = false;
 
     State* state = create_state(true);
     Piece* piece_w_1 = create_piece('K', 0, 0);
@@ -26,8 +26,6 @@ int main ()
     piece_b_4->next = piece_b_5;
     Piece* piece_b_6 = create_piece('N', 1, 0);
     piece_b_5->next = piece_b_6;
-    // Piece* piece_b_7 = create_piece('N', 2, 1);
-    // piece_b_6->next = piece_b_7;
     state->whitePieces = piece_w_1;
     state->blackPieces = piece_b_1;
 
