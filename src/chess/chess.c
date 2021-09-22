@@ -312,6 +312,31 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[])
     }
 }
 
+void move_piece(State* state, Piece* piece, int x, int y)
+{
+    Piece* temp = state->turn ? state->blackPieces : state->whitePieces;
+    bool conflict = false;
+
+    while (temp != NULL)
+    {
+        if (temp->posX == x && temp->posY == y)
+        {
+            conflict = true;
+            break;
+        }
+
+        temp = temp->next;
+    }
+
+    if (conflict)
+    {
+        delete_piece(state, temp, !state->turn);
+    }
+
+    piece->posX = x;
+    piece->posY = y;
+}
+
 State* create_state(bool turn)
 {
     State* state = (State*)malloc(sizeof(State));
