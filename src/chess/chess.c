@@ -397,15 +397,17 @@ int get_value(State* state)
 }
 
 // Not finished
-void calc_value(State* state, bool player)
+bool calc_value(State* state, bool check_posibilities)
 {
     // Set players
-    Piece *king, *currentPlayer, *currentOpponent;
+    Piece *players_king, *currentPlayer, *currentOpponent;
+
     if (state->turn == true)
     {
         currentPlayer = state->whitePieces;
         currentOpponent = state->blackPieces;
     } 
+
     else
     {
         currentPlayer = state->blackPieces;
@@ -413,18 +415,63 @@ void calc_value(State* state, bool player)
     }
 
     // Look for player's king
-    Piece* temp = currentPlayer;
-    while (temp->type != 'K')
+    players_king = currentPlayer;
+    while (players_king->type != 'K')
     {
-        temp = temp->next;
+        players_king = players_king->next;
     }
 
     // Look if attacked
-    Piece* temp2 = currentOpponent;
+    Piece* temp = currentOpponent;
+    int last_dir[2], last_pos[2], res[2];
+    bool attacked = false;
+    state->turn = !state->turn; // just to check
+
     while (temp != NULL)
     {
+        last_dir[0] = -2;
+        last_dir[1] = -2;
+        last_pos[0] = -2;
+        last_pos[1] = -2;
+        res[0] = -2;
+        res[1] = -2;
+        
+        while (temp->posX != res[0] || temp->posY != res[1])
+        {
+            calcMove(state, temp, last_dir, last_pos, res);
+
+            if (players_king->posX == res[0] && players_king->posY == res[1])
+            {
+                attacked = true;
+                break;
+            }
+
+            if (res[0] == -3) {
+                break;
+            }
+
+            last_pos[0] = res[0];
+            last_pos[1] = res[1];
+        }
+
+        if (attacked)
+        {
+            break;
+        }
+
         temp = temp->next;
     }
+
+    state->turn = !state->turn;
+
+    if (!check_posibilities)
+    {
+        return attacked;
+    }
+
+    bool possibility = false;
+
+    return possibility; // change
 }
 
 int check_obstacle(State* state, int x, int y)

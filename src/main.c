@@ -3,7 +3,9 @@
 
 int main () 
 {
-    State* state = create_state(false);
+    player = true;
+
+    State* state = create_state(true);
     Piece* piece_w_1 = create_piece('K', 0, 0);
     Piece* piece_w_2 = create_piece('Q', 0, 1);
     piece_w_1->next = piece_w_2;
@@ -24,6 +26,8 @@ int main ()
     piece_b_4->next = piece_b_5;
     Piece* piece_b_6 = create_piece('N', 1, 0);
     piece_b_5->next = piece_b_6;
+    // Piece* piece_b_7 = create_piece('N', 2, 1);
+    // piece_b_6->next = piece_b_7;
     state->whitePieces = piece_w_1;
     state->blackPieces = piece_b_1;
 
@@ -31,18 +35,20 @@ int main ()
     int last_pos[2] = {-2, -2};
     int res[2] = {-2, -2};
 
-    while (piece_b_6->posX != res[0] || piece_b_6->posY != res[1])
-    {
-        calcMove(state, piece_b_6, last_dir, last_pos, res);
-        printf("%d %d -> %d %d\n", last_dir[0], last_dir[1], res[0], res[1]);
+    // while (piece_b_6->posX != res[0] || piece_b_6->posY != res[1])
+    // {
+    //     calcMove(state, piece_b_6, last_dir, last_pos, res);
+    //     printf("%d %d -> %d %d\n", last_dir[0], last_dir[1], res[0], res[1]);
 
-        if (res[0] == -3) {
-            break;
-        }
+    //     if (res[0] == -3) {
+    //         break;
+    //     }
 
-        last_pos[0] = res[0];
-        last_pos[1] = res[1];
-    }
+    //     last_pos[0] = res[0];
+    //     last_pos[1] = res[1];
+    // }
+
+    printf("%d\n", calc_value(state, true));
     
     delete_state(state);
     return 0;
