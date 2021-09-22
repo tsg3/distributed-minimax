@@ -323,6 +323,72 @@ State* create_state(bool turn)
     return state;
 }
 
+void delete_piece(State* state, Piece* piece, bool player)
+{
+    Piece* prev = player ? state->whitePieces : state->blackPieces;
+    Piece* temp;
+
+    if (prev != NULL)
+    {
+        temp = prev->next;
+    }
+
+    if (prev == piece)
+    {
+        if (player)
+        {
+            state->whitePieces = piece->next;
+        }
+
+        else
+        {
+            state->blackPieces = piece->next;
+        }
+
+        free(piece);
+    }
+
+    else
+    {
+        bool found = false;
+
+        while(temp != NULL)
+        {
+            if (temp == piece)
+            {
+                found = true;
+                break;
+            }
+
+            prev = temp;
+            temp = temp->next;
+        }
+
+        if (found)
+        {
+            prev->next = temp->next;
+            free(temp);
+        }
+    }
+}
+
+void delete_state(State* state)
+{
+    Piece* temp = state->whitePieces;
+    while (temp != NULL) 
+    {
+        delete_piece(state, temp, true);
+        temp = state->whitePieces;
+    }
+
+    temp = state->blackPieces;
+    while (temp != NULL) 
+    {
+        delete_piece(state, temp, false);
+        temp = state->blackPieces;
+    }
+}
+
 // State
 
 int get_value(State* state)

@@ -28,6 +28,8 @@ int knight_movements[8][2];
 
 Piece* create_piece(char, int, int);
 State* create_state(bool);
+void delete_piece(State*, Piece*, bool);
+void delete_state(State*);
 
 void move(Piece*, int, int);
 void calcMove(State*, Piece*, int[], int[], int[]);

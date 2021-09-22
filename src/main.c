@@ -43,6 +43,7 @@ int main ()
         last_pos[0] = res[0];
         last_pos[1] = res[1];
     }
-
+    
+    delete_state(state);
     return 0;
 }
