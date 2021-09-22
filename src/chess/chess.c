@@ -323,6 +323,57 @@ State* create_state(bool turn)
     return state;
 }
 
+State* create_copy(State* old_state)
+{
+    State* new_state = (State*)malloc(sizeof(State));
+    new_state->value = old_state->value;
+    new_state->turn = old_state->turn;
+    
+    Piece* temp = old_state->whitePieces;
+    Piece* last_added = NULL;
+    while (temp != NULL)
+    {
+        Piece* new_piece = create_piece(temp->type, temp->posX, temp->posY);
+
+        if (last_added == NULL)
+        {
+            new_state->whitePieces = new_piece;
+            last_added = new_state->whitePieces;
+        }
+
+        else
+        {
+            last_added->next = new_piece;
+            last_added = last_added->next;
+        }
+
+        temp = temp->next;
+    }
+
+    temp = old_state->blackPieces;
+    last_added = NULL;
+    while (temp != NULL)
+    {
+        Piece* new_piece = create_piece(temp->type, temp->posX, temp->posY);
+
+        if (last_added == NULL)
+        {
+            new_state->blackPieces = new_piece;
+            last_added = new_state->blackPieces;
+        }
+
+        else
+        {
+            last_added->next = new_piece;
+            last_added = last_added->next;
+        }
+
+        temp = temp->next;
+    }
+
+    return new_state;
+}
+
 void delete_piece(State* state, Piece* piece, bool player)
 {
     Piece* prev = player ? state->whitePieces : state->blackPieces;

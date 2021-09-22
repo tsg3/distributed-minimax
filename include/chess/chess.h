@@ -29,6 +29,7 @@ int player;
 
 Piece* create_piece(char, int, int);
 State* create_state(bool);
+State* create_copy(State*);
 void delete_piece(State*, Piece*, bool);
 void delete_state(State*);
 

@@ -34,21 +34,6 @@ int main ()
     int last_dir[2] = {-2, -2};
     int last_pos[2] = {-2, -2};
     int res[2] = {-2, -2};
-
-    // while (piece_b_6->posX != res[0] || piece_b_6->posY != res[1])
-    // {
-    //     calcMove(state, piece_b_6, last_dir, last_pos, res);
-    //     printf("%d %d -> %d %d\n", last_dir[0], last_dir[1], res[0], res[1]);
-
-    //     if (res[0] == -3) {
-    //         break;
-    //     }
-
-    //     last_pos[0] = res[0];
-    //     last_pos[1] = res[1];
-    // }
-
-    printf("%d\n", calc_value(state, true));
     
     delete_state(state);
     return 0;
