@@ -21,6 +21,8 @@ typedef struct State
     Piece* blackPieces;
     int value;
     bool turn;
+    int white_castling;
+    int black_castling;
 } State;
 
 int directions[8][2];
@@ -33,7 +35,7 @@ bool can_passant;
 void init();
 
 Piece* create_piece(char, int, int);
-State* create_state(bool);
+State* create_state(bool, int, int);
 State* create_copy(State*);
 void delete_piece(State*, Piece*, bool);
 void delete_state(State*);
@@ -44,6 +46,9 @@ void calcMove_extended_aux(State*, Piece*, int, int, int[], int[], int[]);
 void calcMove_single_aux(State*, Piece*, int*, int[], int[]);
 void calcMove_pawn_aux(State*, Piece*, int[], int[]);
 void move_piece(State*, Piece*, int, int);
+
+void check_castling(State*, int*);
+void castle(State*, int, Piece**, Piece**, int*, int*);
 
 int get_value(State*);
 bool calc_value(State*, bool);

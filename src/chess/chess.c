@@ -367,16 +367,125 @@ void move_piece(State* state, Piece* piece, int x, int y)
         pawn_passant = temp_passant;
     }
 
-    move (piece, x, y);
+    if (piece->type == 'K')
+    {
+        if (state->turn)
+        {
+            state->white_castling = state->white_castling | 0b100;
+        }
+
+        else
+        {
+            state->black_castling = state->black_castling | 0b100;
+        }
+    }
+
+    else if (piece->type == 'R' && piece->posX == 0
+        && ((piece->posY == 0 && state->turn)
+        || (piece->posY == 7 && !state->turn)))
+    {
+        if (state->turn)
+        {
+            state->white_castling = state->white_castling | 0b010;
+        }
+
+        else
+        {
+            state->black_castling = state->black_castling | 0b010;
+        }
+    }
+
+    else if (piece->type == 'R' && piece->posX == 7
+        && ((piece->posY == 0 && state->turn)
+        || (piece->posY == 7 && !state->turn)))
+    {
+        if (state->turn)
+        {
+            state->white_castling = state->white_castling | 0b001;
+        }
+
+        else
+        {
+            state->black_castling = state->black_castling | 0b001;
+        }
+    }
+
+    move(piece, x, y);
 }
 
-State* create_state(bool turn)
+void check_castling(State* state, int* res)
+{
+    int castling = state->turn ? state->white_castling : state->black_castling;
+
+    if ((castling & 0b101) == 0 && *res > 2)
+    {
+        *res = 2;
+    }
+    
+    else if ((castling & 0b110) == 0 && *res > 1)
+    {
+        *res = 1;
+    }
+
+    else
+    {
+        *res = 0;
+    }
+}
+
+void castle(State* state, int castle_type, Piece** king, Piece** rook, int* final_king_pos, int* final_rook_pos)
+{
+    int rook_x;
+    int rook_y = state->turn ? 0 : 7;
+    final_king_pos[1] = rook_y;
+    final_rook_pos[1] = rook_y;
+    
+    if (castle_type == 1)
+    {
+        rook_x = 0;
+        final_king_pos[0] = 2;
+        final_rook_pos[0] = 3;
+    }
+
+    else if (castle_type == 2)
+    {
+        rook_x = 7;
+        final_king_pos[0] = 6;
+        final_rook_pos[0] = 5;
+    }
+
+    else
+    {
+        return;
+    }
+    
+    Piece* temp = state->turn ? state->whitePieces : state->blackPieces;
+
+    while (temp != NULL)
+    {
+        if (temp->type == 'K')
+        {
+            *king = temp;
+        }
+
+        else if (temp->type == 'R' && temp->posX == rook_x && temp->posY == rook_y)
+        {
+            *rook = temp;
+        }
+
+        temp = temp->next;
+    }
+}
+
+State* create_state(bool turn, int white_castling, int black_castling)
 {
     State* state = (State*)malloc(sizeof(State));
     state->whitePieces = NULL;
     state->blackPieces = NULL;
     state->value = -2;
     state->turn = turn;
+    state->white_castling = white_castling;
+    state->black_castling = black_castling;
 
     return state;
 }

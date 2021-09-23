@@ -5,9 +5,9 @@ int main ()
 {
     init();
     
-    player = false;
+    player = true;
 
-    State* state = create_state(false);
+    State* state = create_state(true, 1, 2);
     Piece* piece_w_1 = create_piece('K', 0, 0);
     Piece* piece_w_2 = create_piece('Q', 0, 1);
     piece_w_1->next = piece_w_2;
