@@ -26,6 +26,11 @@ typedef struct State
 int directions[8][2];
 int knight_movements[8][2];
 int player;
+Piece* pawn_passant;
+Piece* temp_passant;
+bool can_passant;
+
+void init();
 
 Piece* create_piece(char, int, int);
 State* create_state(bool);

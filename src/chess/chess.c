@@ -1,28 +1,45 @@
 #include "chess/chess.h"
 
-int directions[8][2] = 
+void init()
 {
-    {-1, -1},
-    {-1, 0},
-    {-1, 1},
-    {0, 1},
-    {1, 1},
-    {1, 0},
-    {1, -1},
-    {0, -1}
-};
+    directions[0][0] = -1;
+    directions[0][1] = -1;
+    directions[1][0] = -1;
+    directions[1][1] = 0;
+    directions[2][0] = -1;
+    directions[2][1] = 1;
+    directions[3][0] = 0;
+    directions[3][1] = 1;
+    directions[4][0] = 1;
+    directions[4][1] = 1;
+    directions[5][0] = 1;
+    directions[5][1] = 0;
+    directions[6][0] = 1;
+    directions[6][1] = -1;
+    directions[7][0] = 0;
+    directions[7][1] = -1;
+    
+    knight_movements[0][0] = 1;
+    knight_movements[0][1] = 2;
+    knight_movements[1][0] = 2;
+    knight_movements[1][1] = 1;
+    knight_movements[2][0] = 2;
+    knight_movements[2][1] = -1;
+    knight_movements[3][0] = 1;
+    knight_movements[3][1] = -2;
+    knight_movements[4][0] = -1;
+    knight_movements[4][1] = -2;
+    knight_movements[5][0] = -2;
+    knight_movements[5][1] = -1;
+    knight_movements[6][0] = -2;
+    knight_movements[6][1] = 1;
+    knight_movements[7][0] = -1;
+    knight_movements[7][1] = 2;
 
-int knight_movements[8][2] = 
-{
-    {1, 2},
-    {2, 1},
-    {2, -1},
-    {1, -2},
-    {-1, -2},
-    {-2, -1},
-    {-2, 1},
-    {-1, 2}
-};
+    temp_passant = create_piece('X', -3, -4);
+    pawn_passant = temp_passant;
+    can_passant = false;
+}
 
 // Piece
 
@@ -267,6 +284,8 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[])
         last_dir[1] = 2;
         res[0] = piece->posX;
         res[1] = piece->posY + 2 * dir;
+        pawn_passant = piece;
+        can_passant = true;
     }
 
     else
@@ -283,8 +302,11 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[])
         }
 
         else if (piece->posX + dir < 8 && piece->posX + dir >= 0 && y_pos_check
-            && check_obstacle(state, piece->posX + dir, piece->posY + dir) == 1
-            && last_dir[0] == 0)
+            && last_dir[0] == 0
+            && (check_obstacle(state, piece->posX + dir, piece->posY + dir) == 1
+            || (check_obstacle(state, piece->posX + dir, piece->posY) == 1 
+            && piece->posX + dir == pawn_passant->posX
+            && piece->posY == pawn_passant->posY && can_passant)))
         {
             last_dir[0] = dir;
             last_dir[1] = dir;
@@ -293,8 +315,11 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[])
         }
 
         else if (piece->posX - dir < 8 && piece->posX - dir >= 0 && y_pos_check
-            && check_obstacle(state, piece->posX - dir, piece->posY + dir) == 1
-            && (last_dir[0] == dir || last_dir[0] == 0))
+            && (last_dir[0] == dir || last_dir[0] == 0)
+            && (check_obstacle(state, piece->posX - dir, piece->posY + dir) == 1
+            || (check_obstacle(state, piece->posX - dir, piece->posY) == 1 
+            && piece->posX - dir == pawn_passant->posX
+            && piece->posY == pawn_passant->posY && can_passant)))
         {
             last_dir[0] = -dir;
             last_dir[1] = dir;
@@ -319,6 +344,14 @@ void move_piece(State* state, Piece* piece, int x, int y)
 
     while (temp != NULL)
     {
+        if (can_passant && piece->type == 'P' && x != piece->posX
+            && temp->posX == x && temp->posY == piece->posY
+            && temp == pawn_passant)
+        {
+            conflict = true;
+            break;
+        }
+
         if (temp->posX == x && temp->posY == y)
         {
             conflict = true;
@@ -331,6 +364,7 @@ void move_piece(State* state, Piece* piece, int x, int y)
     if (conflict)
     {
         delete_piece(state, temp, !state->turn);
+        pawn_passant = temp_passant;
     }
 
     move (piece, x, y);
