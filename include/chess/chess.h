@@ -23,19 +23,19 @@ typedef struct State
     bool turn;
     int white_castling;
     int black_castling;
+    Piece* pawn_passant;
+    bool can_passant;
 } State;
 
 int directions[8][2];
 int knight_movements[8][2];
 int player;
-Piece* pawn_passant;
 Piece* temp_passant;
-bool can_passant;
 
 void init();
 
 Piece* create_piece(char, int, int);
-State* create_state(bool, int, int);
+State* create_state(bool, int, int, Piece*, bool);
 State* create_copy(State*);
 void delete_piece(State*, Piece*, bool);
 void delete_state(State*);

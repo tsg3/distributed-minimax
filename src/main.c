@@ -7,7 +7,7 @@ int main ()
     
     player = true;
 
-    State* state = create_state(true, 0, 0);
+    State* state = create_state(true, 0, 0, NULL, false);
     Piece* piece_w_1 = create_piece('K', 0, 0);
     Piece* piece_w_2 = create_piece('Q', 0, 1);
     piece_w_1->next = piece_w_2;
@@ -17,6 +17,8 @@ int main ()
     piece_w_3->next = piece_w_4;
     Piece* piece_w_5 = create_piece('P', 0, 2);
     piece_w_4->next = piece_w_5;
+    Piece* piece_w_6 = create_piece('P', 5, 4);
+    piece_w_5->next = piece_w_6;
     Piece* piece_b_1 = create_piece('K', 0, 6);
     Piece* piece_b_2 = create_piece('P', 1, 2);
     piece_b_1->next = piece_b_2;
@@ -28,9 +30,12 @@ int main ()
     piece_b_4->next = piece_b_5;
     Piece* piece_b_6 = create_piece('N', 1, 0);
     piece_b_5->next = piece_b_6;
+    Piece* piece_b_7 = create_piece('P', 4, 4);
+    piece_b_6->next = piece_b_7;
     state->whitePieces = piece_w_1;
     state->blackPieces = piece_b_1;
-    pawn_passant = piece_w_1;
+    state->pawn_passant = piece_b_7;
+    state->can_passant = true;
 
     int last_dir[2] = {-2, -2};
     int last_pos[2] = {-2, -2};

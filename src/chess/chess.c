@@ -37,8 +37,6 @@ void init()
     knight_movements[7][1] = 2;
 
     temp_passant = create_piece('X', -3, -4);
-    pawn_passant = temp_passant;
-    can_passant = false;
 }
 
 // Piece
@@ -349,8 +347,6 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[], bo
         last_dir[1] = 2;
         res[0] = piece->posX;
         res[1] = piece->posY + 2 * dir;
-        pawn_passant = piece;
-        can_passant = true;
         return;
     }
 
@@ -385,8 +381,8 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[], bo
         && last_dir[0] == 0
         && (check_obstacle(state, piece->posX + dir, piece->posY + dir) == 1
         || (check_obstacle(state, piece->posX + dir, piece->posY) == 1 
-        && piece->posX + dir == pawn_passant->posX
-        && piece->posY == pawn_passant->posY && can_passant));
+        && piece->posX + dir == state->pawn_passant->posX
+        && piece->posY == state->pawn_passant->posY && state->can_passant));
 
     if (main_condition && check_if_attacked)
     {
@@ -413,8 +409,8 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[], bo
         && (last_dir[0] == dir || last_dir[0] == 0)
         && (check_obstacle(state, piece->posX - dir, piece->posY + dir) == 1
         || (check_obstacle(state, piece->posX - dir, piece->posY) == 1 
-        && piece->posX - dir == pawn_passant->posX
-        && piece->posY == pawn_passant->posY && can_passant));
+        && piece->posX - dir == state->pawn_passant->posX
+        && piece->posY == state->pawn_passant->posY && state->can_passant));
 
     if (main_condition && check_if_attacked)
     {
@@ -450,9 +446,9 @@ void move_piece(State* state, Piece* piece, int x, int y)
 
     while (temp != NULL)
     {
-        if (can_passant && piece->type == 'P' && x != piece->posX
+        if (state->can_passant && piece->type == 'P' && x != piece->posX
             && temp->posX == x && temp->posY == piece->posY
-            && temp == pawn_passant)
+            && temp == state->pawn_passant)
         {
             conflict = true;
             break;
@@ -470,7 +466,6 @@ void move_piece(State* state, Piece* piece, int x, int y)
     if (conflict)
     {
         delete_piece(state, temp, !state->turn);
-        pawn_passant = temp_passant;
     }
 
     if (piece->type == 'K')
@@ -514,6 +509,15 @@ void move_piece(State* state, Piece* piece, int x, int y)
         {
             state->black_castling = state->black_castling | 0b001;
         }
+    }
+
+    state->pawn_passant = temp_passant;
+    state->can_passant = false;
+
+    if (piece->type == 'P' && x == 0 && y == 2)
+    {
+        state->pawn_passant = piece;
+        state->can_passant = true;
     }
 
     move(piece, x, y);
@@ -706,7 +710,7 @@ void castle(State* state, int castle_type, Piece** king, Piece** rook, int* fina
     }
 }
 
-State* create_state(bool turn, int white_castling, int black_castling)
+State* create_state(bool turn, int white_castling, int black_castling, Piece* pawn_passant, bool can_passant)
 {
     State* state = (State*)malloc(sizeof(State));
     state->whitePieces = NULL;
@@ -715,6 +719,8 @@ State* create_state(bool turn, int white_castling, int black_castling)
     state->turn = turn;
     state->white_castling = white_castling;
     state->black_castling = black_castling;
+    state->pawn_passant = pawn_passant != NULL ? pawn_passant : temp_passant;
+    state->can_passant = can_passant;
 
     return state;
 }
@@ -724,12 +730,23 @@ State* create_copy(State* old_state)
     State* new_state = (State*)malloc(sizeof(State));
     new_state->value = old_state->value;
     new_state->turn = old_state->turn;
+    new_state->white_castling = old_state->white_castling;
+    new_state->black_castling = old_state->black_castling;
+    new_state->pawn_passant = NULL;
+    new_state->can_passant = old_state->can_passant;
     
     Piece* temp = old_state->whitePieces;
     Piece* last_added = NULL;
     while (temp != NULL)
     {
         Piece* new_piece = create_piece(temp->type, temp->posX, temp->posY);
+
+        if (new_piece->type == old_state->pawn_passant->type
+            && new_piece->posX == old_state->pawn_passant->posX
+            && new_piece->posY == old_state->pawn_passant->posY)
+        {
+            new_state->pawn_passant = new_piece;
+        }
 
         if (last_added == NULL)
         {
@@ -752,6 +769,13 @@ State* create_copy(State* old_state)
     {
         Piece* new_piece = create_piece(temp->type, temp->posX, temp->posY);
 
+        if (new_piece->type == old_state->pawn_passant->type
+            && new_piece->posX == old_state->pawn_passant->posX
+            && new_piece->posY == old_state->pawn_passant->posY)
+        {
+            new_state->pawn_passant = new_piece;
+        }
+
         if (last_added == NULL)
         {
             new_state->blackPieces = new_piece;
@@ -765,6 +789,11 @@ State* create_copy(State* old_state)
         }
 
         temp = temp->next;
+    }
+
+    if (new_state->pawn_passant == NULL)
+    {
+        new_state->pawn_passant = temp_passant;
     }
 
     return new_state;
