@@ -41,10 +41,10 @@ void delete_piece(State*, Piece*, bool);
 void delete_state(State*);
 
 void move(Piece*, int, int);
-void calcMove(State*, Piece*, int[], int[], int[]);
-void calcMove_extended_aux(State*, Piece*, int, int, int[], int[], int[]);
-void calcMove_single_aux(State*, Piece*, int*, int[], int[]);
-void calcMove_pawn_aux(State*, Piece*, int[], int[]);
+void calcMove(State*, Piece*, int[], int[], int[], bool);
+void calcMove_extended_aux(State*, Piece*, int, int, int[], int[], int[], bool);
+void calcMove_single_aux(State*, Piece*, int*, int[], int[], bool);
+void calcMove_pawn_aux(State*, Piece*, int[], int[], bool);
 void move_piece(State*, Piece*, int, int);
 
 void check_castling(State*, int*);

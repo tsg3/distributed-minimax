@@ -60,32 +60,32 @@ void move(Piece *piece, int x, int y)
     piece->posY = y;
 }
 
-void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int res[]) 
+void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int res[], bool check_if_attacked) 
 {
     switch (piece->type) 
     {
         case 'K':
-            calcMove_single_aux(state, piece, (int*)directions, last_dir, res);
+            calcMove_single_aux(state, piece, (int*)directions, last_dir, res, check_if_attacked);
             break;
     
         case 'Q':
-            calcMove_extended_aux(state, piece, 0, 1, last_dir, last_pos, res);
+            calcMove_extended_aux(state, piece, 0, 1, last_dir, last_pos, res, check_if_attacked);
             break; 
 
         case 'B':
-            calcMove_extended_aux(state, piece, 0, 2, last_dir, last_pos, res);
+            calcMove_extended_aux(state, piece, 0, 2, last_dir, last_pos, res, check_if_attacked);
             break; 
 
         case 'N':
-            calcMove_single_aux(state, piece, (int*)knight_movements, last_dir, res);
+            calcMove_single_aux(state, piece, (int*)knight_movements, last_dir, res, check_if_attacked);
             break;
 
         case 'R':
-            calcMove_extended_aux(state, piece, 1, 2, last_dir, last_pos, res);
+            calcMove_extended_aux(state, piece, 1, 2, last_dir, last_pos, res, check_if_attacked);
             break; 
 
         case 'P':
-            calcMove_pawn_aux(state, piece, last_dir, res);
+            calcMove_pawn_aux(state, piece, last_dir, res, check_if_attacked);
             break; 
 
         default:
@@ -97,7 +97,7 @@ void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int re
     }
 }
 
-void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int last_dir[], int last_pos[], int res[]) 
+void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int last_dir[], int last_pos[], int res[], bool check_if_attacked) 
 {
     if (last_dir[0] == -2 && last_dir[1] == -2
         && piece->posX + directions[start][0] < 8
@@ -107,10 +107,23 @@ void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int 
         && check_obstacle(state, 
             piece->posX + directions[start][0], piece->posY + directions[start][1]) != 2)
     {
-        last_dir[0] = directions[start][0];
-        last_dir[1] = directions[start][1];
-        res[0] = piece->posX + last_dir[0];
-        res[1] = piece->posY + last_dir[1];
+        if (check_if_attacked)
+        {
+            if (!check_possible_attack(state, piece, 
+                piece->posX + directions[start][0], piece->posY + directions[start][1]))
+            {
+                goto first_case;
+            }
+        }
+
+        else
+        {
+        first_case:
+            last_dir[0] = directions[start][0];
+            last_dir[1] = directions[start][1];
+            res[0] = piece->posX + last_dir[0];
+            res[1] = piece->posY + last_dir[1];
+        }
     } 
 
     else 
@@ -144,8 +157,20 @@ void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int 
                     && !(piece->posX == posX_temp && piece->posY == posY_temp)
                     && last_obstacle_check != 2) 
                 {
-                    found = true;
-                    break;
+                    if (check_if_attacked)
+                    {
+                        if (!check_possible_attack(state, piece, posX_temp, posY_temp))
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    else
+                    {
+                        found = true;
+                        break;
+                    }
                 }
 
                 if (last_obstacle_check == 2)
@@ -197,7 +222,7 @@ void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int 
     }
 }
 
-void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_dir[], int res[])
+void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_dir[], int res[], bool check_if_attacked)
 {
     if (last_dir[0] == 0 && last_dir[1] == -1)
     {
@@ -214,10 +239,24 @@ void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_di
         && piece->posY + movements[1] >= 0
         && check_obstacle(state, piece->posX + movements[0], piece->posY + movements[1]) != 2)
     {
-        last_dir[0] = movements[0];
-        last_dir[1] = movements[1];
-        res[0] = piece->posX + last_dir[0];
-        res[1] = piece->posY + last_dir[1];
+        if (check_if_attacked)
+        {
+            if (!check_possible_attack(state, piece, 
+                piece->posX + movements[0], 
+                piece->posY + movements[1]))
+            {
+                goto first_case;
+            }
+        }
+        
+        else
+        {
+        first_case:
+            last_dir[0] = movements[0];
+            last_dir[1] = movements[1];
+            res[0] = piece->posX + last_dir[0];
+            res[1] = piece->posY + last_dir[1];
+        }
     } 
 
     else 
@@ -238,9 +277,22 @@ void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_di
                     && piece->posY + movements[2 * i + 1] < 8
                     && piece->posY + movements[2 * i + 1] >= 0
                     && check_obstacle(state, piece->posX + movements[2 * i], 
-                        piece->posY + movements[2 * i + 1]) != 2) 
+                        piece->posY + movements[2 * i + 1]) != 2)
                 {
-                    break;
+                    if (check_if_attacked)
+                    {
+                        if (!check_possible_attack(state, piece, 
+                                piece->posX + movements[2 * i], 
+                                piece->posY + movements[2 * i + 1]))
+                        {
+                            break;
+                        }
+                    }
+                    
+                    else
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -268,7 +320,7 @@ void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_di
     }
 }
 
-void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[])
+void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[], bool check_if_attacked)
 {
     int initial_pos = state->turn == true ? 1 : 6;
     int dir = state->turn == true ? 1 : -1;
@@ -277,64 +329,118 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[])
         last_dir[0] = 0;
     }
 
-    if (last_dir[1] == -2 && piece->posY == initial_pos
+    // Moves two spaces
+
+    bool main_condition = last_dir[1] == -2 && piece->posY == initial_pos
         && check_obstacle(state, piece->posX, piece->posY + dir) == 0
-        && check_obstacle(state, piece->posX, piece->posY + 2 * dir) == 0) 
+        && check_obstacle(state, piece->posX, piece->posY + 2 * dir) == 0;
+
+    if (main_condition && check_if_attacked) 
     {
+        if (!check_possible_attack(state, piece, piece->posX, piece->posY + 2 * dir))
+        {
+            goto two_spaces;
+        }
+    }
+
+    if (main_condition && !check_if_attacked)
+    {
+    two_spaces:
         last_dir[1] = 2;
         res[0] = piece->posX;
         res[1] = piece->posY + 2 * dir;
         pawn_passant = piece;
         can_passant = true;
+        return;
     }
 
-    else
+    // Moves one space
+
+    bool range = state->turn == true ? piece->posY < 7 : piece->posY > 0;
+    bool y_pos_check = piece->posY + dir < 8 && piece->posY + dir >= 0;
+
+    main_condition = range && (last_dir[1] == 2 || last_dir[1] == -2)
+        && check_obstacle(state, piece->posX, piece->posY + dir) == 0;
+
+    if (main_condition && check_if_attacked) 
     {
-        bool range = state->turn == true ? piece->posY < 7 : piece->posY > 0;
-        bool y_pos_check = piece->posY + dir < 8 && piece->posY + dir >= 0;
-
-        if (range && (last_dir[1] == 2 || last_dir[1] == -2)
-            && check_obstacle(state, piece->posX, piece->posY + dir) == 0) 
+        if (!check_possible_attack(state, piece, piece->posX, piece->posY + dir))
         {
-            last_dir[1] = dir;
-            res[0] = piece->posX;
-            res[1] = piece->posY + dir;
-        }
-
-        else if (piece->posX + dir < 8 && piece->posX + dir >= 0 && y_pos_check
-            && last_dir[0] == 0
-            && (check_obstacle(state, piece->posX + dir, piece->posY + dir) == 1
-            || (check_obstacle(state, piece->posX + dir, piece->posY) == 1 
-            && piece->posX + dir == pawn_passant->posX
-            && piece->posY == pawn_passant->posY && can_passant)))
-        {
-            last_dir[0] = dir;
-            last_dir[1] = dir;
-            res[0] = piece->posX + dir;
-            res[1] = piece->posY + dir;
-        }
-
-        else if (piece->posX - dir < 8 && piece->posX - dir >= 0 && y_pos_check
-            && (last_dir[0] == dir || last_dir[0] == 0)
-            && (check_obstacle(state, piece->posX - dir, piece->posY + dir) == 1
-            || (check_obstacle(state, piece->posX - dir, piece->posY) == 1 
-            && piece->posX - dir == pawn_passant->posX
-            && piece->posY == pawn_passant->posY && can_passant)))
-        {
-            last_dir[0] = -dir;
-            last_dir[1] = dir;
-            res[0] = piece->posX - dir;
-            res[1] = piece->posY + dir;
-        }
-
-        else
-        {
-            last_dir[0] = -2;
-            last_dir[1] = -2;
-            res[0] = piece->posX;
-            res[1] = piece->posY;
+            goto one_space;
         }
     }
+
+    if (main_condition && !check_if_attacked) 
+    {
+    one_space:
+        last_dir[1] = dir;
+        res[0] = piece->posX;
+        res[1] = piece->posY + dir;
+        return;
+    }
+
+    // Eats on +dir
+
+    main_condition = piece->posX + dir < 8 && piece->posX + dir >= 0 && y_pos_check
+        && last_dir[0] == 0
+        && (check_obstacle(state, piece->posX + dir, piece->posY + dir) == 1
+        || (check_obstacle(state, piece->posX + dir, piece->posY) == 1 
+        && piece->posX + dir == pawn_passant->posX
+        && piece->posY == pawn_passant->posY && can_passant));
+
+    if (main_condition && check_if_attacked)
+    {
+        if (!check_possible_attack(state, piece, 
+            piece->posX + dir, piece->posY + dir))
+        {
+            goto plus_dir;
+        }
+    }
+
+    if (main_condition && !check_if_attacked)
+    {
+    plus_dir:
+        last_dir[0] = dir;
+        last_dir[1] = dir;
+        res[0] = piece->posX + dir;
+        res[1] = piece->posY + dir;
+        return;
+    }
+
+    // Eats on -dir
+
+    main_condition = piece->posX - dir < 8 && piece->posX - dir >= 0 && y_pos_check
+        && (last_dir[0] == dir || last_dir[0] == 0)
+        && (check_obstacle(state, piece->posX - dir, piece->posY + dir) == 1
+        || (check_obstacle(state, piece->posX - dir, piece->posY) == 1 
+        && piece->posX - dir == pawn_passant->posX
+        && piece->posY == pawn_passant->posY && can_passant));
+
+    if (main_condition && check_if_attacked)
+    {
+        if (!check_possible_attack(state, piece, 
+            piece->posX - dir, piece->posY + dir))
+        {
+            goto minus_dir;
+        }
+    }
+
+    if (main_condition && !check_if_attacked)
+    {
+    minus_dir:
+        last_dir[0] = -dir;
+        last_dir[1] = dir;
+        res[0] = piece->posX - dir;
+        res[1] = piece->posY + dir;
+        return;
+    }
+
+    // else
+
+    last_dir[0] = -2;
+    last_dir[1] = -2;
+    res[0] = piece->posX;
+    res[1] = piece->posY;
 }
 
 void move_piece(State* state, Piece* piece, int x, int y)
@@ -779,7 +885,7 @@ bool calc_value(State* state, bool check_posibilities)
         
         while (temp->posX != res[0] || temp->posY != res[1])
         {
-            calcMove(state, temp, last_dir, last_pos, res);
+            calcMove(state, temp, last_dir, last_pos, res, false);
 
             if (players_king->posX == res[0] && players_king->posY == res[1])
             {
@@ -826,7 +932,7 @@ bool calc_value(State* state, bool check_posibilities)
         
         while (true)
         {
-            calcMove(state, temp, last_dir, last_pos, res);
+            calcMove(state, temp, last_dir, last_pos, res, false);
 
             if (res[0] == -3
                 || (temp->posX == res[0] && temp->posY == res[1])) {
