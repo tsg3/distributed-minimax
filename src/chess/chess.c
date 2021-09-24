@@ -486,9 +486,8 @@ bool check_castle_interrupt(State* state, int type)
 
     // Look if the next cell is attacked
 
-    State* temp_state = create_copy(state);
-    Piece* associated_piece = temp_state->turn 
-        ? temp_state->whitePieces : temp_state->blackPieces;
+    Piece* associated_piece = state->turn 
+        ? state->whitePieces : state->blackPieces;
 
     while (associated_piece != NULL)
     {
@@ -504,23 +503,18 @@ bool check_castle_interrupt(State* state, int type)
 
     if (associated_piece == NULL)
     {
-        delete_state(temp_state);
         return true;
     }
 
-    move_piece(temp_state, associated_piece, 
-        intermediate_cells[0][0], intermediate_cells[0][1]);
-
-    if (calc_value(temp_state, false))
+    if (check_possible_attack(state, associated_piece, 
+        intermediate_cells[0][0], intermediate_cells[0][1]))
     {
         return true;
     }
 
-    delete_state(temp_state);
-
     // Look if final cell is attacked
 
-    temp_state = create_copy(state);
+    State* temp_state = create_copy(state);
     associated_piece = temp_state->turn 
         ? temp_state->whitePieces : temp_state->blackPieces;
     Piece *king, *rook;
@@ -839,30 +833,11 @@ bool calc_value(State* state, bool check_posibilities)
                 break;
             }
 
-            temp_state = create_copy(state);
-            associated_piece = temp_state->turn 
-                ? temp_state->whitePieces : temp_state->blackPieces;
-
-            while (associated_piece != NULL)
-            {
-                if (associated_piece->posX == temp->posX
-                    && associated_piece->posY == temp->posY)
-                {
-                    break;
-                }
-
-                associated_piece = associated_piece->next;
-            }
-
-            move_piece(temp_state, associated_piece, res[0], res[1]);
-
-            if (!calc_value(temp_state, false))
+            if (!check_possible_attack(state, temp, res[0], res[1]))
             {
                 possibility = true;
                 break;
             }
-
-            delete_state(temp_state);
 
             last_pos[0] = res[0];
             last_pos[1] = res[1];
@@ -898,6 +873,41 @@ bool calc_value(State* state, bool check_posibilities)
         state->value = 1;
         return true;
     }
+}
+
+bool check_possible_attack(State* state, Piece* piece, int x, int y)
+{
+    State* temp_state = create_copy(state);
+    Piece* associated_piece = temp_state->turn 
+        ? temp_state->whitePieces : temp_state->blackPieces;
+
+    while (associated_piece != NULL)
+    {
+        if (associated_piece->posX == piece->posX
+            && associated_piece->posY == piece->posY
+            && associated_piece->type == piece->type)
+        {
+            break;
+        }
+
+        associated_piece = associated_piece->next;
+    }
+
+    if (associated_piece == NULL)
+    {
+        delete_state(temp_state);
+        return true;
+    }
+
+    move_piece(temp_state, associated_piece, x, y);
+
+    if (calc_value(temp_state, false))
+    {
+        return true;
+    }
+
+    delete_state(temp_state);
+    return false;
 }
 
 int check_obstacle(State* state, int x, int y)

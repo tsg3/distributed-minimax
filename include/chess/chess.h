@@ -53,6 +53,7 @@ void castle(State*, int, Piece**, Piece**, int*, int*);
 
 int get_value(State*);
 bool calc_value(State*, bool);
+bool check_possible_attack(State*, Piece*, int, int);
 
 int check_obstacle(State*, int, int);
 
