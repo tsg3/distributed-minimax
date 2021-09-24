@@ -48,6 +48,7 @@ void calcMove_pawn_aux(State*, Piece*, int[], int[]);
 void move_piece(State*, Piece*, int, int);
 
 void check_castling(State*, int*);
+bool check_castle_interrupt(State*, int);
 void castle(State*, int, Piece**, Piece**, int*, int*);
 
 int get_value(State*);

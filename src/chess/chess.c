@@ -416,21 +416,150 @@ void move_piece(State* state, Piece* piece, int x, int y)
 void check_castling(State* state, int* res)
 {
     int castling = state->turn ? state->white_castling : state->black_castling;
+    int y = state->turn ? 0 : 7;
 
-    if ((castling & 0b101) == 0 && *res > 2)
+    if ((castling & 0b101) == 0 && *res > 2
+        && !calc_value(state, false)
+        && check_obstacle(state, 5, y) == 0
+        && check_obstacle(state, 6, y) == 0
+        && !check_castle_interrupt(state, 2))
     {
         *res = 2;
+        return;
     }
     
-    else if ((castling & 0b110) == 0 && *res > 1)
+    if ((castling & 0b110) == 0 && *res > 1
+        && !calc_value(state, false)
+        && check_obstacle(state, 1, y) == 0
+        && check_obstacle(state, 2, y) == 0
+        && check_obstacle(state, 3, y) == 0
+        && !check_castle_interrupt(state, 1))
     {
         *res = 1;
+        return;
+    }
+
+    if (*res > 0)
+    {
+        *res = 0;
+        return;
+    }
+}
+
+bool check_castle_interrupt(State* state, int type)
+{
+    int intermediate_cells[2][2];
+    int final_rook_cell[2];
+    int y = state->turn ? 0 : 7;
+    int x_rook;
+
+    if (type == 2)
+    {
+        intermediate_cells[0][0] = 5;
+        intermediate_cells[0][1] = y;
+        intermediate_cells[1][0] = 6;
+        intermediate_cells[1][1] = y;
+
+        final_rook_cell[0] = 5;
+        final_rook_cell[1] = y;
+
+        x_rook = 7;
+    }
+
+    else if (type == 1)
+    {
+        intermediate_cells[0][0] = 3;
+        intermediate_cells[0][1] = y;
+        intermediate_cells[1][0] = 2;
+        intermediate_cells[1][1] = y;
+
+        final_rook_cell[0] = 3;
+        final_rook_cell[1] = y;
+
+        x_rook = 0;
     }
 
     else
     {
-        *res = 0;
+        return true;
     }
+
+    // Look if the next cell is attacked
+
+    State* temp_state = create_copy(state);
+    Piece* associated_piece = temp_state->turn 
+        ? temp_state->whitePieces : temp_state->blackPieces;
+
+    while (associated_piece != NULL)
+    {
+        if (associated_piece->posX == 4
+            && associated_piece->posY == y
+            && associated_piece->type == 'K')
+        {
+            break;
+        }
+
+        associated_piece = associated_piece->next;
+    }
+
+    if (associated_piece == NULL)
+    {
+        delete_state(temp_state);
+        return true;
+    }
+
+    move_piece(temp_state, associated_piece, 
+        intermediate_cells[0][0], intermediate_cells[0][1]);
+
+    if (calc_value(temp_state, false))
+    {
+        return true;
+    }
+
+    delete_state(temp_state);
+
+    // Look if final cell is attacked
+
+    temp_state = create_copy(state);
+    associated_piece = temp_state->turn 
+        ? temp_state->whitePieces : temp_state->blackPieces;
+    Piece *king, *rook;
+
+    while (associated_piece != NULL)
+    {
+        if (associated_piece->posX == 4
+            && associated_piece->posY == y
+            && associated_piece->type == 'K')
+        {
+            king = associated_piece;
+        }
+
+        else if (associated_piece->posX == x_rook
+            && associated_piece->posY == y
+            && associated_piece->type == 'R')
+        {
+            rook = associated_piece;
+        }
+
+        associated_piece = associated_piece->next;
+    }
+
+    if (king == NULL || rook == NULL)
+    {
+        delete_state(temp_state);
+        return true;
+    }
+
+    move_piece(temp_state, king, intermediate_cells[1][0], intermediate_cells[1][1]);
+    move_piece(temp_state, rook, final_rook_cell[0], final_rook_cell[1]);
+
+    if (calc_value(temp_state, false))
+    {
+        return true;
+    }
+
+    delete_state(temp_state);
+    return false;
 }
 
 void castle(State* state, int castle_type, Piece** king, Piece** rook, int* final_king_pos, int* final_rook_pos)
