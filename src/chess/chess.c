@@ -436,7 +436,7 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[], bo
     res[1] = piece->posY;
 }
 
-void move_piece(State* state, Piece* piece, int x, int y)
+void move_piece(State* state, Piece* piece, int x, int y, char promotion)
 {
     Piece* temp = state->turn ? state->blackPieces : state->whitePieces;
     bool conflict = false;
@@ -515,6 +515,14 @@ void move_piece(State* state, Piece* piece, int x, int y)
     {
         state->pawn_passant = piece;
         state->can_passant = true;
+    }
+
+    if ((promotion == 'Q' || promotion == 'B' || promotion == 'N' || promotion == 'R')
+        && piece->type == 'P'
+        && ((y == 7 && state->turn) 
+        || (y == 0 && !state->turn)))
+    {
+        piece->type = promotion;
     }
 
     move(piece, x, y);
@@ -651,8 +659,8 @@ bool check_castle_interrupt(State* state, int type)
         return true;
     }
 
-    move_piece(temp_state, king, intermediate_cells[1][0], intermediate_cells[1][1]);
-    move_piece(temp_state, rook, final_rook_cell[0], final_rook_cell[1]);
+    move_piece(temp_state, king, intermediate_cells[1][0], intermediate_cells[1][1], '\0');
+    move_piece(temp_state, rook, final_rook_cell[0], final_rook_cell[1], '\0');
 
     if (calc_value(temp_state, false))
     {
@@ -1031,7 +1039,7 @@ bool check_possible_attack(State* state, Piece* piece, int x, int y)
         return true;
     }
 
-    move_piece(temp_state, associated_piece, x, y);
+    move_piece(temp_state, associated_piece, x, y, '\0');
 
     if (calc_value(temp_state, false))
     {

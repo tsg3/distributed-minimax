@@ -8,6 +8,7 @@ void init_chess_models(bool);
 void clean_passant_temp();
 int minmax(int, int, int);
 int calc_level(State*, int);
-int check_possible_final(State*, Piece*, int, int);
+int calc_level_aux(State*, int, Piece*, int, int, char);
+int check_possible_final(State*, Piece*, int, int, char);
 
 #endif

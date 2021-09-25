@@ -58,46 +58,49 @@ int calc_level(State* state, int level)
 
             printf("%d %d -> (%d, %d) [%c]\n", last_dir[0], last_dir[1], res[0], res[1], temp->type);
 
-            possibility = check_possible_final(state, temp, res[0], res[1]);
-
-            if(possibility == -2)
+            if (temp->type == 'P' 
+                && ((res[1] == 7 && state->turn) 
+                || (res[1] == 0 && !state->turn)))
             {
-                if (level < 2) // replacement of the 50 move rule
-                {
-                    State* copy = create_copy(state);
-                    Piece* associated_piece = copy->turn 
-                        ? copy->whitePieces : copy->blackPieces;
-                    
-                    while (associated_piece != NULL)
-                    {
-                        if (associated_piece->type == temp->type
-                            && associated_piece->posX == temp->posX
-                            && associated_piece->posY == temp->posY)
-                        {
-                            break;
-                        }
+                char promotions[4] = {'Q', 'B', 'N', 'R'};
 
-                        associated_piece = associated_piece->next;
+                for (int i = 0; i < 4; i++)
+                {
+                    possibility = check_possible_final(state, temp, res[0], res[1], 
+                        promotions[i]);
+
+                    if(possibility == -2)
+                    {
+                        possibility = calc_level_aux(state, level, temp, res[0], res[1], 
+                            promotions[i]);
                     }
 
-                    move_piece(copy, associated_piece, res[0], res[1]);
-                    copy->turn = !copy->turn;
-                    possibility = calc_level(copy, level + 1);
-                    delete_state(copy);
-                }
+                    if (possibility == -3)
+                    {
+                        continue;
+                    }
+                    printf(" > %d\n", possibility);
 
-                else
-                {
-                    possibility = level % 2 == 0 ? INT_MIN : INT_MAX;
+                    resp = minmax(resp, possibility, level);
                 }
             }
 
-            if (possibility == -3)
+            else
             {
-                goto back_propagation;
-            }
+                possibility = check_possible_final(state, temp, res[0], res[1], '\0');
 
-            resp = minmax(resp, possibility, level);
+                if(possibility == -2)
+                {
+                    possibility = calc_level_aux(state, level, temp, res[0], res[1], '\0');
+                }
+
+                if (possibility == -3)
+                {
+                    goto back_propagation;
+                }
+
+                resp = minmax(resp, possibility, level);
+            }
 
 back_propagation:
             last_pos[0] = res[0];
@@ -107,10 +110,46 @@ back_propagation:
         temp = temp->next;
     }
 
+    if (resp == INT_MAX || resp == INT_MIN)
+    {
+        calc_value(state, true);
+        resp = state->value;
+    }
+
     return resp;
 }
 
-int check_possible_final(State* state, Piece* piece, int x, int y)
+int calc_level_aux(State* state, int level, Piece* piece, int x, int y, char promotion)
+{
+    if (level < 2) // replacement of the 50 move rule
+    {
+        State* copy = create_copy(state);
+        Piece* associated_piece = copy->turn 
+            ? copy->whitePieces : copy->blackPieces;
+        
+        while (associated_piece != NULL)
+        {
+            if (associated_piece->type == piece->type
+                && associated_piece->posX == piece->posX
+                && associated_piece->posY == piece->posY)
+            {
+                break;
+            }
+
+            associated_piece = associated_piece->next;
+        }
+
+        move_piece(copy, associated_piece, x, y, promotion);
+        copy->turn = !copy->turn;
+        int possibility = calc_level(copy, level + 1);
+        delete_state(copy);
+        return possibility;
+    }
+
+    return level % 2 == 0 ? INT_MIN : INT_MAX;
+}
+
+int check_possible_final(State* state, Piece* piece, int x, int y, char promotion)
 {
     State* possible_state = create_copy(state);
     Piece* associated_piece = 
@@ -133,7 +172,7 @@ int check_possible_final(State* state, Piece* piece, int x, int y)
         return -3;
     }
 
-    move_piece(possible_state, associated_piece, x, y);
+    move_piece(possible_state, associated_piece, x, y, promotion);
 
     possible_state->turn = !possible_state->turn;
 
@@ -144,10 +183,7 @@ int check_possible_final(State* state, Piece* piece, int x, int y)
         delete_state(possible_state);
         return resp;
     }
-
-    else
-    {
-        delete_state(possible_state);
-        return -2;
-    }
+    
+    delete_state(possible_state);
+    return -2;
 }
