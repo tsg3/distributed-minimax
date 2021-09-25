@@ -121,102 +121,100 @@ void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int 
             last_dir[1] = directions[start][1];
             res[0] = piece->posX + last_dir[0];
             res[1] = piece->posY + last_dir[1];
+            return;
         }
     } 
 
-    else 
+    int i, posX_temp, posY_temp;
+    bool reached = false;
+    bool found = false;
+    int last_obstacle_check;
+    if (last_dir[0] == -2 && last_dir[1] == -2) 
     {
-        int i, posX_temp, posY_temp;
-        bool reached = false;
-        bool found = false;
-        int last_obstacle_check;
-        if (last_dir[0] == -2 && last_dir[1] == -2) 
+        reached = true;
+    }
+
+    for (i = start; i < 8; i += step) 
+    {
+        if ((last_dir[0] != directions[i][0]
+            || last_dir[1] != directions[i][1])
+            && !reached) 
         {
-            reached = true;
+            continue;
         }
 
-        for (i = start; i < 8; i += step) 
+        posX_temp = piece->posX;
+        posY_temp = piece->posY;
+        last_obstacle_check = 0;
+
+        while (posX_temp < 8 && posX_temp >= 0
+            && posY_temp < 8 && posY_temp >= 0)
         {
-            if ((last_dir[0] != directions[i][0]
-                || last_dir[1] != directions[i][1])
-                && !reached) 
+            if (reached 
+                && !(piece->posX == posX_temp && piece->posY == posY_temp)
+                && last_obstacle_check != 2) 
             {
-                continue;
-            }
-
-            posX_temp = piece->posX;
-            posY_temp = piece->posY;
-            last_obstacle_check = 0;
-
-            while (posX_temp < 8 && posX_temp >= 0
-                && posY_temp < 8 && posY_temp >= 0)
-            {
-                if (reached 
-                    && !(piece->posX == posX_temp && piece->posY == posY_temp)
-                    && last_obstacle_check != 2) 
+                if (check_if_attacked)
                 {
-                    if (check_if_attacked)
-                    {
-                        if (!check_possible_attack(state, piece, posX_temp, posY_temp))
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    else
+                    if (!check_possible_attack(state, piece, posX_temp, posY_temp))
                     {
                         found = true;
                         break;
                     }
                 }
 
-                if (last_obstacle_check == 2)
-                {
-                    break;
-                }
-
-                if (last_pos[0] == posX_temp
-                    && last_pos[1] == posY_temp
-                    && reached == false) 
-                {
-                    reached = true;
-                }
-
-                posX_temp += directions[i][0];
-                posY_temp += directions[i][1];
-
-                if (last_obstacle_check == 1)
-                {
-                    last_obstacle_check = 2;
-                }
-                
                 else
                 {
-                    last_obstacle_check = check_obstacle(state, posX_temp, posY_temp);
+                    found = true;
+                    break;
                 }
             }
-            
-            if (found) 
+
+            if (last_obstacle_check == 2)
             {
                 break;
             }
-        }
-        if (!found) 
-        {
-            last_dir[0] = -2;
-            last_dir[1] = -2;
-            res[0] = piece->posX;
-            res[1] = piece->posY;
-        }
 
-        else
-        {
-            last_dir[0] = directions[i][0];
-            last_dir[1] = directions[i][1];
-            res[0] = posX_temp;
-            res[1] = posY_temp;
+            if (last_pos[0] == posX_temp
+                && last_pos[1] == posY_temp
+                && reached == false) 
+            {
+                reached = true;
+            }
+
+            posX_temp += directions[i][0];
+            posY_temp += directions[i][1];
+
+            if (last_obstacle_check == 1)
+            {
+                last_obstacle_check = 2;
+            }
+            
+            else
+            {
+                last_obstacle_check = check_obstacle(state, posX_temp, posY_temp);
+            }
         }
+        
+        if (found) 
+        {
+            break;
+        }
+    }
+    if (!found) 
+    {
+        last_dir[0] = -2;
+        last_dir[1] = -2;
+        res[0] = piece->posX;
+        res[1] = piece->posY;
+    }
+
+    else
+    {
+        last_dir[0] = directions[i][0];
+        last_dir[1] = directions[i][1];
+        res[0] = posX_temp;
+        res[1] = posY_temp;
     }
 }
 
@@ -228,9 +226,10 @@ void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_di
         last_dir[1] = -2;
         res[0] = piece->posX;
         res[1] = piece->posY;
+        return;
     }
 
-    else if (last_dir[0] == -2 && last_dir[1] == -2
+    if (last_dir[0] == -2 && last_dir[1] == -2
         && piece->posX + movements[0] < 8
         && piece->posX + movements[0] >= 0
         && piece->posY + movements[1] < 8
@@ -254,67 +253,65 @@ void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_di
             last_dir[1] = movements[1];
             res[0] = piece->posX + last_dir[0];
             res[1] = piece->posY + last_dir[1];
+            return;
         }
     } 
 
-    else 
+    int i;
+    bool reached = false;
+    if (last_dir[0] == -2 && last_dir[1] == -2) 
     {
-        int i;
-        bool reached = false;
-        if (last_dir[0] == -2 && last_dir[1] == -2) 
-        {
-            reached = true;
-        }
+        reached = true;
+    }
 
-        for (i = 0; i < 8; i++) 
+    for (i = 0; i < 8; i++) 
+    {
+        if (reached) 
         {
-            if (reached) 
+            if (piece->posX + movements[2 * i] < 8
+                && piece->posX + movements[2 * i] >= 0
+                && piece->posY + movements[2 * i + 1] < 8
+                && piece->posY + movements[2 * i + 1] >= 0
+                && check_obstacle(state, piece->posX + movements[2 * i], 
+                    piece->posY + movements[2 * i + 1]) != 2)
             {
-                if (piece->posX + movements[2 * i] < 8
-                    && piece->posX + movements[2 * i] >= 0
-                    && piece->posY + movements[2 * i + 1] < 8
-                    && piece->posY + movements[2 * i + 1] >= 0
-                    && check_obstacle(state, piece->posX + movements[2 * i], 
-                        piece->posY + movements[2 * i + 1]) != 2)
+                if (check_if_attacked)
                 {
-                    if (check_if_attacked)
-                    {
-                        if (!check_possible_attack(state, piece, 
-                                piece->posX + movements[2 * i], 
-                                piece->posY + movements[2 * i + 1]))
-                        {
-                            break;
-                        }
-                    }
-                    
-                    else
+                    if (!check_possible_attack(state, piece, 
+                            piece->posX + movements[2 * i], 
+                            piece->posY + movements[2 * i + 1]))
                     {
                         break;
                     }
                 }
+                
+                else
+                {
+                    break;
+                }
             }
-
-            if (last_dir[0] == movements[2 * i] 
-                && last_dir[1] == movements[2 * i + 1]) 
-            {
-                reached = true;
-            }
-        }
-        if (i == 8) 
-        {
-            last_dir[0] = -2;
-            last_dir[1] = -2;
-            res[0] = piece->posX;
-            res[1] = piece->posY;
         }
 
-        else
+        if (last_dir[0] == movements[2 * i] 
+            && last_dir[1] == movements[2 * i + 1]) 
         {
-            last_dir[0] = movements[2 * i];
-            last_dir[1] = movements[2 * i + 1];
-            res[0] = piece->posX + last_dir[0];
-            res[1] = piece->posY + last_dir[1];
+            reached = true;
         }
+    }
+    if (i == 8) 
+    {
+        last_dir[0] = -2;
+        last_dir[1] = -2;
+        res[0] = piece->posX;
+        res[1] = piece->posY;
+    }
+
+    else
+    {
+        last_dir[0] = movements[2 * i];
+        last_dir[1] = movements[2 * i + 1];
+        res[0] = piece->posX + last_dir[0];
+        res[1] = piece->posY + last_dir[1];
     }
 }
 
