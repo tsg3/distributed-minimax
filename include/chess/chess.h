@@ -25,6 +25,7 @@ typedef struct State
     int black_castling;
     Piece* pawn_passant;
     bool can_passant;
+    int fifty_rule;
 } State;
 
 int directions[8][2];

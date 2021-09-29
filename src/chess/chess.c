@@ -525,6 +525,16 @@ void move_piece(State* state, Piece* piece, int x, int y, char promotion)
         piece->type = promotion;
     }
 
+    if (conflict || piece->type == 'P')
+    {
+        state->fifty_rule = 0;
+    }
+
+    else if (!state->turn == player)
+    {
+        state->fifty_rule++;
+    }
+
     move(piece, x, y);
 }
 
@@ -726,6 +736,7 @@ State* create_state(bool turn, int white_castling, int black_castling, Piece* pa
     state->black_castling = black_castling;
     state->pawn_passant = pawn_passant != NULL ? pawn_passant : temp_passant;
     state->can_passant = can_passant;
+    state->fifty_rule = 0;
 
     return state;
 }
@@ -739,6 +750,7 @@ State* create_copy(State* old_state)
     new_state->black_castling = old_state->black_castling;
     new_state->pawn_passant = NULL;
     new_state->can_passant = old_state->can_passant;
+    new_state->fifty_rule = old_state->fifty_rule;
     
     Piece* temp = old_state->whitePieces;
     Piece* last_added = NULL;
@@ -951,6 +963,13 @@ bool calc_value(State* state, bool check_posibilities)
     if (!check_posibilities)
     {
         return attacked;
+    }
+
+    // Fifty-move rule
+    if (state->fifty_rule == 50)
+    {
+        state->value = 0;
+        return true;
     }
 
     bool possibility = false;
