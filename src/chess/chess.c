@@ -43,7 +43,7 @@ void init()
 
 Piece* create_piece(char type, int x, int y)
 {
-    Piece* piece = (Piece*)malloc(sizeof(piece));
+    Piece* piece = (Piece*)malloc(sizeof(Piece));
     piece->type = type;
     piece->posX = x;
     piece->posY = y;
@@ -855,19 +855,22 @@ void delete_piece(State* state, Piece* piece, bool player)
 
 void delete_state(State* state)
 {
-    Piece* temp = state->whitePieces;
-    while (temp != NULL) 
+    Piece* temp;
+    while (state->whitePieces != NULL) 
     {
-        delete_piece(state, temp, true);
         temp = state->whitePieces;
+        state->whitePieces = temp->next;
+        free(temp);
     }
 
-    temp = state->blackPieces;
-    while (temp != NULL) 
+    while (state->blackPieces != NULL) 
     {
-        delete_piece(state, temp, false);
         temp = state->blackPieces;
+        state->blackPieces = temp->next;
+        free(temp);
     }
+
+    free(state);
 }
 
 // State
@@ -1043,6 +1046,7 @@ bool check_possible_attack(State* state, Piece* piece, int x, int y)
 
     if (calc_value(temp_state, false))
     {
+        delete_state(temp_state);
         return true;
     }
 

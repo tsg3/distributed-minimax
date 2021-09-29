@@ -3,7 +3,7 @@
 
 int main () 
 {
-    bool initial_player = false;
+    bool initial_player = true;
 
     init_chess_models(initial_player);
 
