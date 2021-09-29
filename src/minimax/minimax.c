@@ -110,6 +110,28 @@ back_propagation:
         temp = temp->next;
     }
 
+    int count = 3;
+    int king_pos[2], rook_pos[2];
+    Piece *king, *rook;
+
+    while (true)
+    {
+        check_castling(state, &count);
+
+        if (count == 0)
+        {
+            break;
+        }
+
+        printf("Castle on level: %d | P%d -> castle #%d\n", level, state->turn, count);
+
+        castle(state, count, &king, &rook, (int*)king_pos, (int*)rook_pos);
+
+        possibility = calc_level_castle(state, level, king, rook, king_pos, rook_pos);
+
+        resp = minmax(resp, possibility, level);
+    }
+
     if (resp == INT_MAX || resp == INT_MIN)
     {
         calc_value(state, true);
@@ -140,6 +162,53 @@ int calc_level_aux(State* state, int level, Piece* piece, int x, int y, char pro
         }
 
         move_piece(copy, associated_piece, x, y, promotion);
+        copy->turn = !copy->turn;
+        int possibility = calc_level(copy, level + 1);
+        delete_state(copy);
+        return possibility;
+    }
+
+    return level % 2 == 0 ? INT_MIN : INT_MAX;
+}
+
+int calc_level_castle(State* state, int level, Piece* king, Piece* rook, int* king_pos, int* rook_pos)
+{
+    if (level < 2) // replacement of the 50 move rule
+    {
+        State* copy = create_copy(state);
+        Piece* associated_piece = copy->turn 
+            ? copy->whitePieces : copy->blackPieces;
+        Piece *temp_king, *temp_rook;
+        
+        while (associated_piece != NULL)
+        {
+            if (associated_piece->type == king->type
+                && associated_piece->posX == king->posX
+                && associated_piece->posY == king->posY)
+            {
+                temp_king = associated_piece;
+            }
+
+            else if (associated_piece->type == rook->type
+                && associated_piece->posX == rook->posX
+                && associated_piece->posY == rook->posY)
+            {
+                temp_rook = associated_piece;
+            }
+
+            associated_piece = associated_piece->next;
+        }
+
+        int fifty_move_init = copy->fifty_rule;
+        move_piece(copy, temp_king, king_pos[0], king_pos[1], '\0');
+        move_piece(copy, temp_rook, rook_pos[0], rook_pos[1], '\0');
+        int fifty_move_error = copy->fifty_rule;
+
+        if (fifty_move_error == fifty_move_init + 2)
+        {
+            copy->fifty_rule--;
+        }
+
         copy->turn = !copy->turn;
         int possibility = calc_level(copy, level + 1);
         delete_state(copy);

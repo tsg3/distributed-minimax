@@ -674,6 +674,7 @@ bool check_castle_interrupt(State* state, int type)
 
     if (calc_value(temp_state, false))
     {
+        delete_state(temp_state);
         return true;
     }
 
