@@ -43,7 +43,7 @@ void init()
 
 Piece* create_piece(char type, int x, int y)
 {
-    Piece* piece = (Piece*)malloc(sizeof(piece));
+    Piece* piece = (Piece*)malloc(sizeof(Piece));
     piece->type = type;
     piece->posX = x;
     piece->posY = y;
@@ -121,102 +121,100 @@ void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int 
             last_dir[1] = directions[start][1];
             res[0] = piece->posX + last_dir[0];
             res[1] = piece->posY + last_dir[1];
+            return;
         }
     } 
 
-    else 
+    int i, posX_temp, posY_temp;
+    bool reached = false;
+    bool found = false;
+    int last_obstacle_check;
+    if (last_dir[0] == -2 && last_dir[1] == -2) 
     {
-        int i, posX_temp, posY_temp;
-        bool reached = false;
-        bool found = false;
-        int last_obstacle_check;
-        if (last_dir[0] == -2 && last_dir[1] == -2) 
+        reached = true;
+    }
+
+    for (i = start; i < 8; i += step) 
+    {
+        if ((last_dir[0] != directions[i][0]
+            || last_dir[1] != directions[i][1])
+            && !reached) 
         {
-            reached = true;
+            continue;
         }
 
-        for (i = start; i < 8; i += step) 
+        posX_temp = piece->posX;
+        posY_temp = piece->posY;
+        last_obstacle_check = 0;
+
+        while (posX_temp < 8 && posX_temp >= 0
+            && posY_temp < 8 && posY_temp >= 0)
         {
-            if ((last_dir[0] != directions[i][0]
-                || last_dir[1] != directions[i][1])
-                && !reached) 
+            if (reached 
+                && !(piece->posX == posX_temp && piece->posY == posY_temp)
+                && last_obstacle_check != 2) 
             {
-                continue;
-            }
-
-            posX_temp = piece->posX;
-            posY_temp = piece->posY;
-            last_obstacle_check = 0;
-
-            while (posX_temp < 8 && posX_temp >= 0
-                && posY_temp < 8 && posY_temp >= 0)
-            {
-                if (reached 
-                    && !(piece->posX == posX_temp && piece->posY == posY_temp)
-                    && last_obstacle_check != 2) 
+                if (check_if_attacked)
                 {
-                    if (check_if_attacked)
-                    {
-                        if (!check_possible_attack(state, piece, posX_temp, posY_temp))
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    else
+                    if (!check_possible_attack(state, piece, posX_temp, posY_temp))
                     {
                         found = true;
                         break;
                     }
                 }
 
-                if (last_obstacle_check == 2)
-                {
-                    break;
-                }
-
-                if (last_pos[0] == posX_temp
-                    && last_pos[1] == posY_temp
-                    && reached == false) 
-                {
-                    reached = true;
-                }
-
-                posX_temp += directions[i][0];
-                posY_temp += directions[i][1];
-
-                if (last_obstacle_check == 1)
-                {
-                    last_obstacle_check = 2;
-                }
-                
                 else
                 {
-                    last_obstacle_check = check_obstacle(state, posX_temp, posY_temp);
+                    found = true;
+                    break;
                 }
             }
-            
-            if (found) 
+
+            if (last_obstacle_check == 2)
             {
                 break;
             }
-        }
-        if (!found) 
-        {
-            last_dir[0] = -2;
-            last_dir[1] = -2;
-            res[0] = piece->posX;
-            res[1] = piece->posY;
-        }
 
-        else
-        {
-            last_dir[0] = directions[i][0];
-            last_dir[1] = directions[i][1];
-            res[0] = posX_temp;
-            res[1] = posY_temp;
+            if (last_pos[0] == posX_temp
+                && last_pos[1] == posY_temp
+                && reached == false) 
+            {
+                reached = true;
+            }
+
+            posX_temp += directions[i][0];
+            posY_temp += directions[i][1];
+
+            if (last_obstacle_check == 1)
+            {
+                last_obstacle_check = 2;
+            }
+            
+            else
+            {
+                last_obstacle_check = check_obstacle(state, posX_temp, posY_temp);
+            }
         }
+        
+        if (found) 
+        {
+            break;
+        }
+    }
+    if (!found) 
+    {
+        last_dir[0] = -2;
+        last_dir[1] = -2;
+        res[0] = piece->posX;
+        res[1] = piece->posY;
+    }
+
+    else
+    {
+        last_dir[0] = directions[i][0];
+        last_dir[1] = directions[i][1];
+        res[0] = posX_temp;
+        res[1] = posY_temp;
     }
 }
 
@@ -228,9 +226,10 @@ void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_di
         last_dir[1] = -2;
         res[0] = piece->posX;
         res[1] = piece->posY;
+        return;
     }
 
-    else if (last_dir[0] == -2 && last_dir[1] == -2
+    if (last_dir[0] == -2 && last_dir[1] == -2
         && piece->posX + movements[0] < 8
         && piece->posX + movements[0] >= 0
         && piece->posY + movements[1] < 8
@@ -254,67 +253,65 @@ void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_di
             last_dir[1] = movements[1];
             res[0] = piece->posX + last_dir[0];
             res[1] = piece->posY + last_dir[1];
+            return;
         }
     } 
 
-    else 
+    int i;
+    bool reached = false;
+    if (last_dir[0] == -2 && last_dir[1] == -2) 
     {
-        int i;
-        bool reached = false;
-        if (last_dir[0] == -2 && last_dir[1] == -2) 
-        {
-            reached = true;
-        }
+        reached = true;
+    }
 
-        for (i = 0; i < 8; i++) 
+    for (i = 0; i < 8; i++) 
+    {
+        if (reached) 
         {
-            if (reached) 
+            if (piece->posX + movements[2 * i] < 8
+                && piece->posX + movements[2 * i] >= 0
+                && piece->posY + movements[2 * i + 1] < 8
+                && piece->posY + movements[2 * i + 1] >= 0
+                && check_obstacle(state, piece->posX + movements[2 * i], 
+                    piece->posY + movements[2 * i + 1]) != 2)
             {
-                if (piece->posX + movements[2 * i] < 8
-                    && piece->posX + movements[2 * i] >= 0
-                    && piece->posY + movements[2 * i + 1] < 8
-                    && piece->posY + movements[2 * i + 1] >= 0
-                    && check_obstacle(state, piece->posX + movements[2 * i], 
-                        piece->posY + movements[2 * i + 1]) != 2)
+                if (check_if_attacked)
                 {
-                    if (check_if_attacked)
-                    {
-                        if (!check_possible_attack(state, piece, 
-                                piece->posX + movements[2 * i], 
-                                piece->posY + movements[2 * i + 1]))
-                        {
-                            break;
-                        }
-                    }
-                    
-                    else
+                    if (!check_possible_attack(state, piece, 
+                            piece->posX + movements[2 * i], 
+                            piece->posY + movements[2 * i + 1]))
                     {
                         break;
                     }
                 }
+                
+                else
+                {
+                    break;
+                }
             }
-
-            if (last_dir[0] == movements[2 * i] 
-                && last_dir[1] == movements[2 * i + 1]) 
-            {
-                reached = true;
-            }
-        }
-        if (i == 8) 
-        {
-            last_dir[0] = -2;
-            last_dir[1] = -2;
-            res[0] = piece->posX;
-            res[1] = piece->posY;
         }
 
-        else
+        if (last_dir[0] == movements[2 * i] 
+            && last_dir[1] == movements[2 * i + 1]) 
         {
-            last_dir[0] = movements[2 * i];
-            last_dir[1] = movements[2 * i + 1];
-            res[0] = piece->posX + last_dir[0];
-            res[1] = piece->posY + last_dir[1];
+            reached = true;
         }
+    }
+    if (i == 8) 
+    {
+        last_dir[0] = -2;
+        last_dir[1] = -2;
+        res[0] = piece->posX;
+        res[1] = piece->posY;
+    }
+
+    else
+    {
+        last_dir[0] = movements[2 * i];
+        last_dir[1] = movements[2 * i + 1];
+        res[0] = piece->posX + last_dir[0];
+        res[1] = piece->posY + last_dir[1];
     }
 }
 
@@ -439,7 +436,7 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[], bo
     res[1] = piece->posY;
 }
 
-void move_piece(State* state, Piece* piece, int x, int y)
+void move_piece(State* state, Piece* piece, int x, int y, char promotion)
 {
     Piece* temp = state->turn ? state->blackPieces : state->whitePieces;
     bool conflict = false;
@@ -518,6 +515,24 @@ void move_piece(State* state, Piece* piece, int x, int y)
     {
         state->pawn_passant = piece;
         state->can_passant = true;
+    }
+
+    if ((promotion == 'Q' || promotion == 'B' || promotion == 'N' || promotion == 'R')
+        && piece->type == 'P'
+        && ((y == 7 && state->turn) 
+        || (y == 0 && !state->turn)))
+    {
+        piece->type = promotion;
+    }
+
+    if (conflict || piece->type == 'P')
+    {
+        state->fifty_rule = 0;
+    }
+
+    else if (!state->turn == player)
+    {
+        state->fifty_rule++;
     }
 
     move(piece, x, y);
@@ -654,11 +669,12 @@ bool check_castle_interrupt(State* state, int type)
         return true;
     }
 
-    move_piece(temp_state, king, intermediate_cells[1][0], intermediate_cells[1][1]);
-    move_piece(temp_state, rook, final_rook_cell[0], final_rook_cell[1]);
+    move_piece(temp_state, king, intermediate_cells[1][0], intermediate_cells[1][1], '\0');
+    move_piece(temp_state, rook, final_rook_cell[0], final_rook_cell[1], '\0');
 
     if (calc_value(temp_state, false))
     {
+        delete_state(temp_state);
         return true;
     }
 
@@ -721,6 +737,7 @@ State* create_state(bool turn, int white_castling, int black_castling, Piece* pa
     state->black_castling = black_castling;
     state->pawn_passant = pawn_passant != NULL ? pawn_passant : temp_passant;
     state->can_passant = can_passant;
+    state->fifty_rule = 0;
 
     return state;
 }
@@ -734,6 +751,7 @@ State* create_copy(State* old_state)
     new_state->black_castling = old_state->black_castling;
     new_state->pawn_passant = NULL;
     new_state->can_passant = old_state->can_passant;
+    new_state->fifty_rule = old_state->fifty_rule;
     
     Piece* temp = old_state->whitePieces;
     Piece* last_added = NULL;
@@ -850,19 +868,22 @@ void delete_piece(State* state, Piece* piece, bool player)
 
 void delete_state(State* state)
 {
-    Piece* temp = state->whitePieces;
-    while (temp != NULL) 
+    Piece* temp;
+    while (state->whitePieces != NULL) 
     {
-        delete_piece(state, temp, true);
         temp = state->whitePieces;
+        state->whitePieces = temp->next;
+        free(temp);
     }
 
-    temp = state->blackPieces;
-    while (temp != NULL) 
+    while (state->blackPieces != NULL) 
     {
-        delete_piece(state, temp, false);
         temp = state->blackPieces;
+        state->blackPieces = temp->next;
+        free(temp);
     }
+
+    free(state);
 }
 
 // State
@@ -943,6 +964,13 @@ bool calc_value(State* state, bool check_posibilities)
     if (!check_posibilities)
     {
         return attacked;
+    }
+
+    // Fifty-move rule
+    if (state->fifty_rule == 50)
+    {
+        state->value = 0;
+        return true;
     }
 
     bool possibility = false;
@@ -1034,10 +1062,11 @@ bool check_possible_attack(State* state, Piece* piece, int x, int y)
         return true;
     }
 
-    move_piece(temp_state, associated_piece, x, y);
+    move_piece(temp_state, associated_piece, x, y, '\0');
 
     if (calc_value(temp_state, false))
     {
+        delete_state(temp_state);
         return true;
     }
 

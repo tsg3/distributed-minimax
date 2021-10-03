@@ -25,6 +25,7 @@ typedef struct State
     int black_castling;
     Piece* pawn_passant;
     bool can_passant;
+    int fifty_rule;
 } State;
 
 int directions[8][2];
@@ -45,7 +46,7 @@ void calcMove(State*, Piece*, int[], int[], int[], bool);
 void calcMove_extended_aux(State*, Piece*, int, int, int[], int[], int[], bool);
 void calcMove_single_aux(State*, Piece*, int*, int[], int[], bool);
 void calcMove_pawn_aux(State*, Piece*, int[], int[], bool);
-void move_piece(State*, Piece*, int, int);
+void move_piece(State*, Piece*, int, int, char);
 
 void check_castling(State*, int*);
 bool check_castle_interrupt(State*, int);
