@@ -124,7 +124,10 @@ def create_image(name):
     if (name == "pixel"):
         return tk.PhotoImage(width=1, height=1)
     
-    image = img.open(f"media/{name}.png")
+    img_path = os.path.dirname(__file__)
+    img_path = os.path.abspath(os.path.join(img_path, "media"))
+    img_path = os.path.abspath(os.path.join(img_path, f"{name}.png"))
+    image = img.open(img_path)
 
     resized_image = None
     if name == "bin" or name == "start":
