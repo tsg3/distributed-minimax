@@ -3,31 +3,108 @@ import tkinter.ttk as ttk
 from PIL import Image as img
 from PIL import ImageTk as imgtk
 import os
+import json
 
 pieces_images = {}
 pieces_id = {}
 current_id = None
 buttons = []
 selected_lbl = None
+matrix = []
+selected_value = None
+topology_combobox = None
+node1_value = None
+node2_value = None
+node3_value = None
+node4_value = None
+turn_combobox = None
+iters_entry = None
+
+def set_bit_segment(row, column, segment):
+    global matrix
+    matrix[row] = (matrix[row] & (0xFFFFFFFF ^ (0xFF << (4 * column)))
+        | (segment << (4 * column)))
+
+def reverse_in_range(max, min, num):
+    return (max + min) - num
+
+def get_char(type_int):
+    if type_int == 1:
+        return "P"
+    elif type_int == 2:
+        return "R"
+    elif type_int == 3:
+        return "N"
+    elif type_int == 4:
+        return "B"
+    elif type_int == 5:
+        return "Q"
+    elif type_int == 6:
+        return "K"
+    return ""
 
 def set_image(row, column):
     global buttons
+    global matrix
+
     buttons[row][column].config(image=pieces_images[pieces_id[current_id]])
+    set_bit_segment(row, column, selected_value)
 
 def set_current_id(row, column):
     global selected_lbl
     global current_id
+    global selected_value
 
     current_id = 2 * row + column
     selected_lbl.config(image=pieces_images[pieces_id[current_id]])
 
+    if row == 6:
+        selected_value = 0
+        return
+    tmp = ((2 * row + column) % 6) + 1
+    selected_value = tmp if row < 3 else tmp + 8
+
 def send_file():
-    print("File sent!")
+    # check table
+    # check iters
+
+    path = os.path.dirname(__file__)
+    path = os.path.abspath(os.path.join(path, "file"))
+    file = open(path, 'w')
+
+    data = {}
+    data["topologia"] = topology_combobox.get()
+    data["nodos"] = [node1_value.get(), node2_value.get(), node3_value.get(), node4_value.get()]
+    
+    tablero = []
+    for i in range(8):
+        i_r = reverse_in_range(7, 0, i)
+        for j in range(8):
+            cell_value = (matrix[i] & (0b1111 << (4 * j))) >> (4 * j)
+            if cell_value == 0:
+                continue
+
+            piece = {}
+            piece["tipo"] = get_char(cell_value & 7)
+            piece["posicionX"] = i_r
+            piece["posicionY"] = j
+            piece["jugador"] = True if cell_value & 8 == 0 else False
+            tablero.append(piece)
+    data["tablero"] = tablero
+    
+    data["turno"] = True if turn_combobox.get() == "Blanco" else False
+    data["iteraciones"] = int(iters_entry.get())
+
+    file.write(json.dumps(data))
+
+    file.close()
 
 def set_initial_position():
     global buttons
     global current_id
     global selected_lbl
+    global matrix
+    global selected_value
 
     current_id = 12
     selected_lbl.config(image=pieces_images[pieces_id[current_id]])
@@ -40,6 +117,14 @@ def set_initial_position():
     buttons[0][5].config(image=pieces_images["blackBishop"])
     buttons[0][6].config(image=pieces_images["blackKnight"])
     buttons[0][7].config(image=pieces_images["blackRook"])
+    set_bit_segment(0, 0, 10)
+    set_bit_segment(0, 1, 11)
+    set_bit_segment(0, 2, 12)
+    set_bit_segment(0, 3, 13)
+    set_bit_segment(0, 4, 14)
+    set_bit_segment(0, 5, 12)
+    set_bit_segment(0, 6, 11)
+    set_bit_segment(0, 7, 10)
 
     buttons[1][0].config(image=pieces_images["blackPawn"])
     buttons[1][1].config(image=pieces_images["blackPawn"])
@@ -49,10 +134,19 @@ def set_initial_position():
     buttons[1][5].config(image=pieces_images["blackPawn"])
     buttons[1][6].config(image=pieces_images["blackPawn"])
     buttons[1][7].config(image=pieces_images["blackPawn"])
+    set_bit_segment(1, 0, 9)
+    set_bit_segment(1, 1, 9)
+    set_bit_segment(1, 2, 9)
+    set_bit_segment(1, 3, 9)
+    set_bit_segment(1, 4, 9)
+    set_bit_segment(1, 5, 9)
+    set_bit_segment(1, 6, 9)
+    set_bit_segment(1, 7, 9)
 
     for i in range(2, 6):
         for j in range(8):
             buttons[i][j].config(image=pieces_images["pixel"])
+        matrix[i] = 0
 
     buttons[6][0].config(image=pieces_images["whitePawn"])
     buttons[6][1].config(image=pieces_images["whitePawn"])
@@ -63,6 +157,15 @@ def set_initial_position():
     buttons[6][6].config(image=pieces_images["whitePawn"])
     buttons[6][7].config(image=pieces_images["whitePawn"])
 
+    set_bit_segment(6, 0, 1)
+    set_bit_segment(6, 1, 1)
+    set_bit_segment(6, 2, 1)
+    set_bit_segment(6, 3, 1)
+    set_bit_segment(6, 4, 1)
+    set_bit_segment(6, 5, 1)
+    set_bit_segment(6, 6, 1)
+    set_bit_segment(6, 7, 1)
+
     buttons[7][0].config(image=pieces_images["whiteRook"])
     buttons[7][1].config(image=pieces_images["whiteKnight"])
     buttons[7][2].config(image=pieces_images["whiteBishop"])
@@ -71,11 +174,23 @@ def set_initial_position():
     buttons[7][5].config(image=pieces_images["whiteBishop"])
     buttons[7][6].config(image=pieces_images["whiteKnight"])
     buttons[7][7].config(image=pieces_images["whiteRook"])
+    set_bit_segment(7, 0, 2)
+    set_bit_segment(7, 1, 3)
+    set_bit_segment(7, 2, 4)
+    set_bit_segment(7, 3, 5)
+    set_bit_segment(7, 4, 6)
+    set_bit_segment(7, 5, 4)
+    set_bit_segment(7, 6, 3)
+    set_bit_segment(7, 7, 2)
+
+    selected_value = 0
 
 def clean_table():
     global buttons
     global current_id
     global selected_lbl
+    global matrix
+    global selected_value
 
     current_id = 12
     selected_lbl.config(image=pieces_images[pieces_id[current_id]])
@@ -83,6 +198,8 @@ def clean_table():
     for i in range(8):
         for j in range(8):
             buttons[i][j].config(image=pieces_images[pieces_id[current_id]])
+        matrix[i] = 0
+    selected_value = 0
 
 def set_cell_color(cell):
     return "#efc56f" if (cell & 0b1) == 0 else "#655b3f"
@@ -151,7 +268,7 @@ def create_label(root, text, row, column, columnspan, sticky=None):
 
     return label
 
-if ("__name__"):
+if "__name__":
     # init
 
     root = tk.Tk()
@@ -204,6 +321,9 @@ if ("__name__"):
                     bg=set_cell_color(i * 8 + j + i), a_bg="#dcdcdc", command=1))
 
         buttons.append(buttons_temp)
+
+    matrix = [0] * 8
+    selected_value = 0b0000
 
     # button pieces
 
