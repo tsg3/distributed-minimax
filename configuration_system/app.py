@@ -50,6 +50,10 @@ def set_initial_position():
     buttons[1][6].config(image=pieces_images["blackPawn"])
     buttons[1][7].config(image=pieces_images["blackPawn"])
 
+    for i in range(2, 6):
+        for j in range(8):
+            buttons[i][j].config(image=pieces_images["pixel"])
+
     buttons[6][0].config(image=pieces_images["whitePawn"])
     buttons[6][1].config(image=pieces_images["whitePawn"])
     buttons[6][2].config(image=pieces_images["whitePawn"])
