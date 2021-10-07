@@ -1,5 +1,7 @@
 import tkinter as tk 
+from tkinter import messagebox as msgbox
 import tkinter.ttk as ttk
+from typing import Text
 from PIL import Image as img
 from PIL import ImageTk as imgtk
 import os
@@ -43,6 +45,57 @@ def get_char(type_int):
         return "K"
     return ""
 
+def check_iter(string):
+    try:
+        value = int(string)
+        if value > 0:
+            return True
+        return False
+    except:
+        return False
+
+def check_table(table):
+    white_kings = 0
+    white_pawns = 0
+    white_other = 0
+
+    black_kings = 0
+    black_pawns = 0
+    black_other = 0
+
+    for i in table:
+        if i["tipo"] == "P":
+            if i["jugador"] == True:
+                white_pawns += 1
+            else:
+                black_pawns += 1
+        
+        elif i["tipo"] == "K":
+            if i["jugador"] == True:
+                white_kings += 1
+            else:
+                black_kings += 1
+
+        else:
+            if i["jugador"] == True:
+                white_other += 1
+            else:
+                black_other += 1
+
+        if white_pawns > 8 or black_pawns > 8:
+            return False
+
+        if i["tipo"] == "P" and (i["posicionX"] == 0 or i["posicionX"] == 7):
+            return False
+    
+    if white_kings != 1 or black_kings != 1:
+        return False
+
+    if 16 < white_pawns + white_other or 16 < black_pawns + black_other:
+        return False
+
+    return True
+
 def set_image(row, column):
     global buttons
     global matrix
@@ -65,18 +118,13 @@ def set_current_id(row, column):
     selected_value = tmp if row < 3 else tmp + 8
 
 def send_file():
-    # check table
-    # check iters
+    iters = iters_entry.get()
+    if not check_iter(iters):
+        msgbox.showerror(title="Formato", 
+            message="Las iteraciones deben ser un número entero positivo!")
+        return
 
-    path = os.path.dirname(__file__)
-    path = os.path.abspath(os.path.join(path, "file"))
-    file = open(path, 'w')
-
-    data = {}
-    data["topologia"] = topology_combobox.get()
-    data["nodos"] = [node1_value.get(), node2_value.get(), node3_value.get(), node4_value.get()]
-    
-    tablero = []
+    table = []
     for i in range(8):
         i_r = reverse_in_range(7, 0, i)
         for j in range(8):
@@ -88,12 +136,25 @@ def send_file():
             piece["tipo"] = get_char(cell_value & 7)
             piece["posicionX"] = i_r
             piece["posicionY"] = j
-            piece["jugador"] = True if cell_value & 8 == 0 else False
-            tablero.append(piece)
-    data["tablero"] = tablero
+            piece["jugador"] = True if (cell_value & 8) >> 3 == 1 else False
+            table.append(piece)
     
+    if not check_table(table):
+        msgbox.showerror(title="Tablero", 
+            message="El estado del tablero no es válido!")
+        return
+
+    path = os.path.dirname(__file__)
+    path = os.path.abspath(os.path.join(path, "file"))
+    file = open(path, 'w')
+
+    data = {}
+    data["topologia"] = topology_combobox.get()
+    data["nodos"] = [
+        node1_value.get(), node2_value.get(), node3_value.get(), node4_value.get()]
+    data["tablero"] = table
     data["turno"] = True if turn_combobox.get() == "Blanco" else False
-    data["iteraciones"] = int(iters_entry.get())
+    data["iteraciones"] = int(iters)
 
     file.write(json.dumps(data))
 
@@ -204,7 +265,9 @@ def clean_table():
 def set_cell_color(cell):
     return "#efc56f" if (cell & 0b1) == 0 else "#655b3f"
 
-def create_button(root, width, height, row, column, bg=None, a_bg=None, image=None, command=None):
+def create_button(root, width, height, row, column, 
+    bg=None, a_bg=None, image=None, command=None):
+
     button = tk.Button(root)
 
     if bg != None:
