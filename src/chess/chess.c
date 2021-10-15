@@ -530,7 +530,7 @@ void move_piece(State* state, Piece* piece, int x, int y, char promotion)
         state->fifty_rule = 0;
     }
 
-    else if (!state->turn == player)
+    else if (!state->turn == conf->turn)
     {
         state->fifty_rule++;
     }
@@ -1025,7 +1025,7 @@ bool calc_value(State* state, bool check_posibilities)
         return true;
     }
 
-    else if (state->turn == player)
+    else if (state->turn == conf->turn)
     {
         state->value = -1;
         return true;

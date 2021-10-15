@@ -42,7 +42,7 @@ typedef struct Configuration
 
 int directions[8][2];
 int knight_movements[8][2];
-int player;
+Configuration* conf;
 Piece* temp_passant;
 
 void init();

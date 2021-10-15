@@ -4,7 +4,7 @@
 #include <chess/chess.h>
 #include <limits.h>
 
-void init_chess_models(bool);
+void init_chess_models();
 void clean_passant_temp();
 int minmax(int, int, int);
 int calc_level(State*, int);

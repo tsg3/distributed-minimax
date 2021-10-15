@@ -64,7 +64,7 @@ Configuration* configure_minimax()
     if (cl == EOF)
     {
         perror("Error closing the file");
-        free(conf);
+        delete_configuration(conf);
         return NULL;
     }
 
@@ -73,11 +73,7 @@ Configuration* configure_minimax()
 parsing_error:
     cJSON_Delete(json);
     perror("Error parsing the configuration file");
-    if (conf->initial_state != NULL)
-    {
-        delete_state(conf->initial_state);
-    }
-    free(conf);
+    delete_configuration(conf);
     return NULL;
 }
 
@@ -347,6 +343,9 @@ void print_configuration(Configuration* conf)
 
 void delete_configuration(Configuration* conf)
 {
-    delete_state(conf->initial_state);
+    if (conf->initial_state != NULL)
+    {
+        delete_state(conf->initial_state);
+    }
     free(conf);
 }
