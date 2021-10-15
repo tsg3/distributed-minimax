@@ -1,10 +1,8 @@
 #include <minimax/minimax.h>
 
-void init_chess_models(bool main_player)
+void init_chess_models()
 {
     init();
-
-    player = main_player;
 }
 
 void clean_passant_temp()
