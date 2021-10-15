@@ -28,6 +28,18 @@ typedef struct State
     int fifty_rule;
 } State;
 
+typedef struct Configuration
+{
+    char topology;
+    bool turn;
+    int iters;
+    bool node_1;
+    bool node_2;
+    bool node_3;
+    bool node_4;
+    State* initial_state;
+} Configuration;
+
 int directions[8][2];
 int knight_movements[8][2];
 int player;

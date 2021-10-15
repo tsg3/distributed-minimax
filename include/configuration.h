@@ -6,19 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <chess/chess.h>
-
-typedef struct Configuration
-{
-    char topology;
-    bool turn;
-    int iters;
-    bool node_1;
-    bool node_2;
-    bool node_3;
-    bool node_4;
-    State* initial_state;
-} Configuration;
+#include <minimax/minimax.h>
 
 Configuration* configure_minimax();
 
@@ -33,5 +21,7 @@ void add_piece(State*, Piece*, bool);
 bool cJSON_bool_to_bool(const cJSON*, bool*);
 
 void print_configuration(Configuration*);
+
+void delete_configuration(Configuration*);
 
 #endif

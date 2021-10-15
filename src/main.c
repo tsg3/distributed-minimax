@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <minimax/minimax.h>
 #include <configuration.h>
 
 int main () 
@@ -39,7 +38,6 @@ int main ()
 
     print_configuration(conf);
 
-    delete_state(conf->initial_state);
-    free(conf);
+    delete_configuration(conf);
     return 0;
 }

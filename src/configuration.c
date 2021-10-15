@@ -344,3 +344,9 @@ void print_configuration(Configuration* conf)
         temp = temp->next;
     }
 }
+
+void delete_configuration(Configuration* conf)
+{
+    delete_state(conf->initial_state);
+    free(conf);
+}
