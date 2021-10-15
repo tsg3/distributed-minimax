@@ -6,18 +6,32 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <chess/chess.h>
 
-typedef struct configuration
+typedef struct Configuration
 {
     char topology;
     bool turn;
     int iters;
-} configuration;
+    bool node_1;
+    bool node_2;
+    bool node_3;
+    bool node_4;
+    State* initial_state;
+} Configuration;
 
-configuration* configure_minimax();
+Configuration* configure_minimax();
 
-bool check_topology(const cJSON*, configuration*);
-bool check_turn(const cJSON*, configuration*);
-bool check_iters(const cJSON*, configuration*);
+bool check_topology(const cJSON*, char*);
+bool check_turn(const cJSON*, bool*);
+bool check_iters(const cJSON*, int*);
+bool check_nodes(const cJSON*, Configuration*);
+bool check_pieces(const cJSON*, State*);
+
+void add_piece(State*, Piece*, bool);
+
+bool cJSON_bool_to_bool(const cJSON*, bool*);
+
+void print_configuration(Configuration*);
 
 #endif

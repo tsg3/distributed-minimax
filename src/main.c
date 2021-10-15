@@ -30,13 +30,16 @@ int main ()
 
     // clean_passant_temp();
     // delete_state(state);
-    configuration* conf = configure_minimax();
+    Configuration* conf = configure_minimax();
 
     if (conf == NULL)
     {
         return -1;
     }
 
+    print_configuration(conf);
+
+    delete_state(conf->initial_state);
     free(conf);
     return 0;
 }
