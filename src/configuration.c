@@ -200,7 +200,8 @@ bool check_pieces(const cJSON* item, State* state)
         cJSON* temp = item->child;
         cJSON *type, *x, *y, *player;
         Piece* new_piece;
-        bool bool_value;
+        bool player_value;
+        char piece_value;
 
         while (temp != NULL)
         {
@@ -226,9 +227,19 @@ bool check_pieces(const cJSON* item, State* state)
                 return false;
             }
 
-            cJSON_bool_to_bool(player, &bool_value);
-            new_piece = create_piece(type->valuestring[0], x->valueint, y->valueint);
-            add_piece(state, new_piece, bool_value);
+            cJSON_bool_to_bool(player, &player_value);
+            piece_value = type->valuestring[0];
+
+            if (!(piece_value == 'K' || piece_value == 'Q' || piece_value == 'B'
+                || piece_value == 'N' || piece_value == 'R' || piece_value == 'P')
+                || x->valueint < 0 || x->valueint > 7
+                || y->valueint < 0 || y->valueint > 7)
+            {
+                return false;
+            }
+
+            new_piece = create_piece(piece_value, x->valueint, y->valueint);
+            add_piece(state, new_piece, player_value);
 
             temp = temp->next;
         }
