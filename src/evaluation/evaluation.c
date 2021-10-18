@@ -1,5 +1,28 @@
 #include <evaluation/evaluation.h>
 
+void* eval_main()
+{
+    init_evaluation_module();
+    start_time();
+
+    time_t current_time;
+
+    while (eval_thread_exec)
+    {
+        sleep(5); // This is the time between CPU usage and RAM usage measures
+
+        current_time = (double) get_current_time();
+        get_cpu_usage(current_time);
+        get_ram_usage(current_time);
+        last_time = current_time;
+    }
+
+    end_time();
+
+    pthread_exit(NULL);
+}
+
+
 void init_evaluation_module()
 {
     CPU_list = NULL;
@@ -24,11 +47,14 @@ void init_evaluation_module()
     strcat(statm_path + strlen(prefix) + strlen(pid_str), suffix_2);
 
     free(pid_str);
+
+    eval_thread_exec = true;
 }
 
 void start_time()
 {
-    time_elapsed = time(NULL);
+    first_time = time(NULL);
+    last_time = first_time;
 }
 
 time_t get_current_time()
@@ -38,12 +64,7 @@ time_t get_current_time()
 
 void end_time()
 {
-    time_elapsed = time(NULL) - time_elapsed;
-}
-
-double get_time_in_double()
-{
-    return (double) time_elapsed;
+    time_elapsed = time(NULL) - first_time;
 }
 
 FILE* open_file(char* path)
@@ -56,7 +77,7 @@ FILE* open_file(char* path)
     return fd;
 }
 
-void get_cpu_usage()
+void get_cpu_usage(time_t current_time)
 {
     FILE* fd = open_file(stat_path);
     if (fd == NULL)
@@ -67,9 +88,7 @@ void get_cpu_usage()
     unsigned long utime, stime;
     long cutime, cstime;
 
-    double start_period = get_time_in_double();
-    double end_period = (double) get_current_time();
-    double period = end_period - start_period;
+    double period = (double)(current_time - last_time);
 
     long hertz = sysconf(_SC_CLK_TCK);
 
@@ -88,10 +107,10 @@ void get_cpu_usage()
 
     fclose(fd);
 
-    add_measure(&CPU_list, usage, end_period);
+    add_measure(&CPU_list, usage, (double)(current_time - first_time));
 }
 
-void get_ram_usage()
+void get_ram_usage(time_t current_time)
 {
     FILE* fd = open_file(statm_path);
     if (fd == NULL)
@@ -105,11 +124,11 @@ void get_ram_usage()
     fscanf(fd, "%*d %lf %*d %*d %*d %*d %*d", &resident);
 
     resident *= page_size; // pages to KB
-    double moment = (double) get_current_time();
+    double moment = (double) current_time;
 
     fclose(fd);
 
-    add_measure(&RAM_list, resident, moment);
+    add_measure(&RAM_list, resident, (double)(current_time - first_time));
 }
 
 void add_measure(Measure** list, double value, double time)

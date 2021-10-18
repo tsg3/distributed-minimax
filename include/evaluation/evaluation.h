@@ -6,6 +6,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
+#include <pthread.h>
+#include <stdbool.h>
 
 typedef struct Measure
 {
@@ -14,23 +16,30 @@ typedef struct Measure
     struct Measure* next;
 } Measure;
 
+time_t first_time;
+time_t last_time;
 time_t time_elapsed;
+
 Measure* CPU_list;
 Measure* RAM_list;
 char* stat_path;
 char* statm_path;
+
+pthread_t eval_thread_id;
+bool eval_thread_exec;
+
+void* eval_main();
 
 void init_evaluation_module();
 
 void start_time();
 time_t get_current_time();
 void end_time();
-double get_time_in_double();
 
 FILE* open_file(char*);
 
-void get_cpu_usage();
-void get_ram_usage();
+void get_cpu_usage(time_t);
+void get_ram_usage(time_t);
 
 void add_measure(Measure**, double, double);
 void free_lists();

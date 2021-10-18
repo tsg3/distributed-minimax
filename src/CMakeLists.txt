@@ -4,4 +4,8 @@ add_compile_options(-g)
 
 add_executable(test main.c cJSON.c configuration.c chess/chess.c minimax/minimax.c evaluation/evaluation.c)
 
+set(LIBRARIES pthread)
+
+target_link_libraries(test ${LIBRARIES})
+
 install(TARGETS test DESTINATION bin)
