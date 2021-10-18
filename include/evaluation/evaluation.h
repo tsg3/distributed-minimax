@@ -17,6 +17,8 @@ typedef struct Measure
 time_t time_elapsed;
 Measure* CPU_list;
 Measure* RAM_list;
+char* stat_path;
+char* statm_path;
 
 void init_evaluation_module();
 
@@ -24,6 +26,8 @@ void start_time();
 time_t get_current_time();
 void end_time();
 double get_time_in_double();
+
+FILE* open_file(char*);
 
 void get_cpu_usage();
 void get_ram_usage();

@@ -3,6 +3,27 @@
 void init_evaluation_module()
 {
     CPU_list = NULL;
+
+    char* prefix = "/proc/";
+    pid_t pid = getpid();
+    char* pid_str = (char*)malloc(sizeof(int) * 6);
+    sprintf(pid_str, "%d", pid);
+    char* suffix_1 = "/stat";
+    char* suffix_2 = "/statm";
+
+    int length = strlen(prefix) + strlen(pid_str) + strlen(suffix_1) + 1;
+
+    stat_path = (char*)malloc(length);
+    strcpy(stat_path, prefix);
+    strcpy(stat_path + strlen(prefix), pid_str);
+    strcat(stat_path + strlen(prefix) + strlen(pid_str), suffix_1);
+
+    statm_path = (char*)malloc(length + 1);
+    strcpy(statm_path, prefix);
+    strcpy(statm_path + strlen(prefix), pid_str);
+    strcat(statm_path + strlen(prefix) + strlen(pid_str), suffix_2);
+
+    free(pid_str);
 }
 
 void start_time()
@@ -25,26 +46,21 @@ double get_time_in_double()
     return (double) time_elapsed;
 }
 
-void get_cpu_usage()
+FILE* open_file(char* path)
 {
-    char* prefix = "/proc/";
-    char* suffix = "/stat";
-
-    pid_t pid = getpid();
-
-    char* pid_str = (char*)malloc(sizeof(int) * 6);
-    sprintf(pid_str, "%d", pid);
-
-    char* path = (char*)malloc(strlen(prefix) + strlen(pid_str) + strlen(suffix) + 1);
-    strcpy(path, prefix);
-    strcpy(path + strlen(prefix), pid_str);
-    strcat(path + strlen(prefix) + strlen(pid_str), suffix);
-
     FILE* fd = fopen(path, "r");
     if (fd == NULL)
     {
         perror("Error opening the file");
-        free(path);
+    }
+    return fd;
+}
+
+void get_cpu_usage()
+{
+    FILE* fd = open_file(stat_path);
+    if (fd == NULL)
+    {
         return;
     }
 
@@ -71,32 +87,15 @@ void get_cpu_usage()
     }
 
     fclose(fd);
-    free(path);
-    free(pid_str);
 
     add_measure(&CPU_list, usage, end_period);
 }
 
 void get_ram_usage()
 {
-    char* prefix = "/proc/";
-    char* suffix = "/statm";
-
-    pid_t pid = getpid();
-
-    char* pid_str = (char*)malloc(sizeof(int) * 6);
-    sprintf(pid_str, "%d", pid);
-
-    char* path = (char*)malloc(strlen(prefix) + strlen(pid_str) + strlen(suffix) + 1);
-    strcpy(path, prefix);
-    strcpy(path + strlen(prefix), pid_str);
-    strcat(path + strlen(prefix) + strlen(pid_str), suffix);
-
-    FILE* fd = fopen(path, "r");
+    FILE* fd = open_file(statm_path);
     if (fd == NULL)
     {
-        perror("Error opening the file");
-        free(path);
         return;
     }
 
@@ -109,8 +108,6 @@ void get_ram_usage()
     double moment = (double) get_current_time();
 
     fclose(fd);
-    free(path);
-    free(pid_str);
 
     add_measure(&RAM_list, resident, moment);
 }
@@ -154,5 +151,15 @@ void free_lists()
         temp = RAM_list;
         RAM_list = temp->next;
         free(temp);
+    }
+
+    if (stat_path != NULL)
+    {
+        free(stat_path);
+    }
+
+    if (statm_path != NULL)
+    {
+        free(statm_path);
     }
 }
