@@ -48,10 +48,6 @@ void get_cpu_usage()
         return;
     }
 
-    fseek(fd, 0, SEEK_END);
-    long fsize = ftell(fd);
-    fseek(fd, 0, SEEK_SET);
-
     unsigned long utime, stime;
     long cutime, cstime;
 
@@ -74,27 +70,61 @@ void get_cpu_usage()
         usage = 100 * (((double) (utime + stime + cutime + cstime) / hertz) / period);
     }
 
-    // printf("Hello world from %d!\n%lu %lu %ld %ld %f %f %ld %f %f\n", 
-    //     pid, utime, stime, cutime, cstime, start_period, end_period, hertz, 
-    //     period, usage);
+    fclose(fd);
+    free(path);
+    free(pid_str);
+
+    add_measure(&CPU_list, usage, end_period);
+}
+
+void get_ram_usage()
+{
+    char* prefix = "/proc/";
+    char* suffix = "/statm";
+
+    pid_t pid = getpid();
+
+    char* pid_str = (char*)malloc(sizeof(int) * 6);
+    sprintf(pid_str, "%d", pid);
+
+    char* path = (char*)malloc(strlen(prefix) + strlen(pid_str) + strlen(suffix) + 1);
+    strcpy(path, prefix);
+    strcpy(path + strlen(prefix), pid_str);
+    strcat(path + strlen(prefix) + strlen(pid_str), suffix);
+
+    FILE* fd = fopen(path, "r");
+    if (fd == NULL)
+    {
+        perror("Error opening the file");
+        free(path);
+        return;
+    }
+
+    double resident;
+    unsigned long page_size = sysconf(_SC_PAGESIZE) / 1024;
+
+    fscanf(fd, "%*d %lf %*d %*d %*d %*d %*d", &resident);
+
+    resident *= page_size; // pages to KB
+    double moment = (double) get_current_time();
 
     fclose(fd);
     free(path);
     free(pid_str);
 
-    add_cpu_measure(usage, end_period);
+    add_measure(&RAM_list, resident, moment);
 }
 
-void add_cpu_measure(double value, double time)
+void add_measure(Measure** list, double value, double time)
 {
     Measure* new_measure = (Measure*)malloc(sizeof(Measure));
     new_measure->value = value;
     new_measure->time = time;
     new_measure->next = NULL;
 
-    if (CPU_list != NULL)
+    if (*list != NULL)
     {
-        Measure* temp = CPU_list;
+        Measure* temp = *list;
         while (temp->next != NULL)
         {
             temp = temp->next;
@@ -104,17 +134,25 @@ void add_cpu_measure(double value, double time)
     
     else
     {
-        CPU_list = new_measure;
+        *list = new_measure;
     }
 }
 
-void free_cpu_list()
+void free_lists()
 {
     Measure* temp = CPU_list;
     while (CPU_list != NULL)
     {
         temp = CPU_list;
         CPU_list = temp->next;
+        free(temp);
+    }
+
+    temp = RAM_list;
+    while (RAM_list != NULL)
+    {
+        temp = RAM_list;
+        RAM_list = temp->next;
         free(temp);
     }
 }

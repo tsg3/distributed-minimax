@@ -11,11 +11,12 @@ typedef struct Measure
 {
     double value;
     double time;
-    struct CPU_measure* next;
+    struct Measure* next;
 } Measure;
 
 time_t time_elapsed;
 Measure* CPU_list;
+Measure* RAM_list;
 
 void init_evaluation_module();
 
@@ -25,7 +26,9 @@ void end_time();
 double get_time_in_double();
 
 void get_cpu_usage();
-void add_cpu_measure(double, double);
-void free_cpu_list();
+void get_ram_usage();
+
+void add_measure(Measure**, double, double);
+void free_lists();
 
 #endif
