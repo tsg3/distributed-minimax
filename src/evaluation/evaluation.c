@@ -3,7 +3,6 @@
 void* eval_main()
 {
     init_evaluation_module();
-    start_time();
 
     time_t current_time;
 
@@ -15,6 +14,7 @@ void* eval_main()
         get_cpu_usage(current_time);
         get_ram_usage(current_time);
         last_time = current_time;
+        // last_time = current_time;
     }
 
     end_time();
@@ -49,12 +49,20 @@ void init_evaluation_module()
     free(pid_str);
 
     eval_thread_exec = true;
+    
+    last_cpu_usage_times = 0;
+    hertz = sysconf(_SC_CLK_TCK);
+    num_processors = sysconf(_SC_NPROCESSORS_ONLN);
+    page_size = sysconf(_SC_PAGESIZE) / 1024;
+
+    start_time();
 }
 
 void start_time()
 {
     first_time = time(NULL);
     last_time = first_time;
+    // last_time = first_time;
 }
 
 time_t get_current_time()
@@ -88,22 +96,27 @@ void get_cpu_usage(time_t current_time)
     unsigned long utime, stime;
     long cutime, cstime;
 
+    // double period = (double)(current_time - last_time);
     double period = (double)(current_time - last_time);
-
-    long hertz = sysconf(_SC_CLK_TCK);
 
     fscanf(fd, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu %ld %ld", 
         &utime, &stime, &cutime, &cstime);
 
     double usage;
+    unsigned long total = utime + stime + cutime + cstime;
+
     if (period == 0.0)
     {
-        usage = 100.0;
+        usage = 0.0;
     }
     else
     {
-        usage = 100 * (((double) (utime + stime + cutime + cstime) / hertz) / period);
+        usage = (100 / num_processors) * ((
+            (double) (total - last_cpu_usage_times) 
+            / hertz) / period);
     }
+
+    last_cpu_usage_times = total;
 
     fclose(fd);
 
@@ -119,7 +132,6 @@ void get_ram_usage(time_t current_time)
     }
 
     double resident;
-    unsigned long page_size = sysconf(_SC_PAGESIZE) / 1024;
 
     fscanf(fd, "%*d %lf %*d %*d %*d %*d %*d", &resident);
 
