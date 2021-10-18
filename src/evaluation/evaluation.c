@@ -85,16 +85,16 @@ void get_cpu_usage()
     add_cpu_measure(usage, end_period);
 }
 
-void add_cpu_measure(double cpu, double time)
+void add_cpu_measure(double value, double time)
 {
-    CPU_measure* new_measure = (CPU_measure*)malloc(sizeof(CPU_measure));
-    new_measure->usage = cpu;
+    Measure* new_measure = (Measure*)malloc(sizeof(Measure));
+    new_measure->value = value;
     new_measure->time = time;
     new_measure->next = NULL;
 
     if (CPU_list != NULL)
     {
-        CPU_measure* temp = CPU_list;
+        Measure* temp = CPU_list;
         while (temp->next != NULL)
         {
             temp = temp->next;
@@ -110,7 +110,7 @@ void add_cpu_measure(double cpu, double time)
 
 void free_cpu_list()
 {
-    CPU_measure* temp = CPU_list;
+    Measure* temp = CPU_list;
     while (CPU_list != NULL)
     {
         temp = CPU_list;

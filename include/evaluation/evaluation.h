@@ -7,15 +7,15 @@
 #include <unistd.h>
 #include <string.h>
 
-typedef struct CPU_measure
+typedef struct Measure
 {
-    double usage;
+    double value;
     double time;
     struct CPU_measure* next;
-} CPU_measure;
+} Measure;
 
 time_t time_elapsed;
-CPU_measure* CPU_list;
+Measure* CPU_list;
 
 void init_evaluation_module();
 
