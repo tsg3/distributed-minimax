@@ -14,7 +14,6 @@ void* eval_main()
         get_cpu_usage(current_time);
         get_ram_usage(current_time);
         last_time = current_time;
-        // last_time = current_time;
     }
 
     end_time();
@@ -39,12 +38,12 @@ void init_evaluation_module()
     stat_path = (char*)malloc(length);
     strcpy(stat_path, prefix);
     strcpy(stat_path + strlen(prefix), pid_str);
-    strcat(stat_path + strlen(prefix) + strlen(pid_str), suffix_1);
+    strcpy(stat_path + strlen(prefix) + strlen(pid_str), suffix_1);
 
     statm_path = (char*)malloc(length + 1);
     strcpy(statm_path, prefix);
     strcpy(statm_path + strlen(prefix), pid_str);
-    strcat(statm_path + strlen(prefix) + strlen(pid_str), suffix_2);
+    strcpy(statm_path + strlen(prefix) + strlen(pid_str), suffix_2);
 
     free(pid_str);
 
@@ -62,7 +61,6 @@ void start_time()
 {
     first_time = time(NULL);
     last_time = first_time;
-    // last_time = first_time;
 }
 
 time_t get_current_time()
@@ -96,7 +94,6 @@ void get_cpu_usage(time_t current_time)
     unsigned long utime, stime;
     long cutime, cstime;
 
-    // double period = (double)(current_time - last_time);
     double period = (double)(current_time - last_time);
 
     fscanf(fd, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu %ld %ld", 
