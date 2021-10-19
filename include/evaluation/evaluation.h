@@ -17,10 +17,8 @@ typedef struct Measure
 } Measure;
 
 time_t first_time;
-// time_t last_time;
 time_t time_elapsed;
 
-// Usage_parameters* last_parameters;
 unsigned long last_cpu_usage_times;
 time_t last_time;
 unsigned long hertz;
@@ -31,6 +29,8 @@ Measure* CPU_list;
 Measure* RAM_list;
 char* stat_path;
 char* statm_path;
+
+clock_t cpu_time_elapsed;
 
 pthread_t eval_thread_id;
 bool eval_thread_exec;
