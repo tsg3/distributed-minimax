@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <configuration.h>
 #include <evaluation/evaluation.h>
+#include <reports/reports.h>
 
 int main () 
 {
@@ -16,12 +17,16 @@ int main ()
     pthread_create(&eval_thread_id, NULL, eval_main, NULL);
 
     print_configuration(conf);
+
+    cpu_time_elapsed = clock();
     printf("%d\n", calc_level(conf->initial_state, 0));
+    cpu_time_elapsed = clock() - cpu_time_elapsed;
     eval_thread_exec = false;
 
     pthread_join(eval_thread_id, NULL);
 
-    printf("Total time -> %.2f seconds\n", (double) time_elapsed);
+    printf("Total time -> %.2f (%.2f) seconds\n", 
+        (double)time_elapsed, ((double)cpu_time_elapsed) / CLOCKS_PER_SEC);
 
     Measure* temp = CPU_list;
     int i = 0;
@@ -40,6 +45,8 @@ int main ()
         temp = temp->next;
         i++;
     }
+
+    export_report();
 
     free_lists();
 
