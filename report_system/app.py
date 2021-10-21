@@ -150,6 +150,9 @@ if __name__ == "__main__":
     lbl_error_found = tk.Label(info_canvas, text="¿Ejecución?:", bg="#f1f1f1")
     lbl_error_found.grid(row=3, column=1, sticky=tk.E)
 
+    ghost_frame = tk.Frame(info_canvas, bg="#f1f1f1", width=200) # To expand column 2
+    ghost_frame.grid(row=0, column=2, sticky="NSEW")
+
     lbl_real_time_value = tk.Label(info_canvas, bg="#f1f1f1")
     lbl_real_time_value.grid(row=1, column=2, sticky=tk.W)
 
