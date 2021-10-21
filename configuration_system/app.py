@@ -1,11 +1,12 @@
+import os
+import json
+
 import tkinter as tk 
 from tkinter import messagebox as msgbox
 import tkinter.ttk as ttk
-from typing import Text
+
 from PIL import Image as img
 from PIL import ImageTk as imgtk
-import os
-import json
 
 pieces_images = {}
 pieces_id = {}
