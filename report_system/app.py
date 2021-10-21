@@ -101,21 +101,22 @@ if __name__ == "__main__":
     root = tk.Tk()
     root.title("Sistema de visualización")
     root.config(bg="#f1f1f1")
-    root.columnconfigure(2, weight=1, pad=2)
 
     # Main containers
 
     info_canvas = tk.Canvas(root, bg="#f1f1f1")
     info_canvas.grid_columnconfigure(2, weight=1)
     scroll_canvas = tk.Canvas(root, bg="#f1f1f1")
-    scroll = tk.Scrollbar(root, command=scroll_canvas.yview)
+    scroll_v = tk.Scrollbar(root, command=scroll_canvas.yview)
+    scroll_h = tk.Scrollbar(root, command=scroll_canvas.xview, orient="horizontal")
 
     # Scrollable Frame
 
     right_frame = tk.Frame(scroll_canvas, bg="#f1f1f1")
 
     info_canvas.pack(side="left", fill="y", expand=False)
-    scroll.pack(side="right", fill="both", expand=False)
+    scroll_v.pack(side="right", fill="both", expand=False)
+    scroll_h.pack(side="bottom", fill="x", expand=False)
     scroll_canvas.pack(side="right", fill="both", expand=True)
 
     right_frame.pack(fill="both", expand=True)
@@ -129,9 +130,11 @@ if __name__ == "__main__":
         )
     )
 
-    scroll_window = scroll_canvas.create_window((0, 0), window=right_frame, tags="frame")
+    scroll_canvas.create_window((0, 0), window=right_frame)
 
-    scroll_canvas.configure(yscrollcommand=scroll.set)
+    scroll_canvas.configure(yscrollcommand=scroll_v.set)
+
+    scroll_canvas.configure(xscrollcommand=scroll_h.set)
 
     # 'info_canvas' widgets
 
