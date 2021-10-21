@@ -84,10 +84,9 @@ def browse_report():
     try:
         return set_current_report(open_report_as_dict(filename))
     except Exception as e:
-        print(e)
         return tk.messagebox.showerror(
             title="Error", 
-            message=f"El archivo '{filename}' no existe!\nIntentelo de nuevo"
+            message=f"El archivo '{filename}' no es un archivo válido!\nIntentelo de nuevo"
         )
 
 def open_report_as_dict(path):
