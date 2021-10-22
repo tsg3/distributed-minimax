@@ -74,6 +74,6 @@ int configure_state(char state);
 
 int shutdown_system()
 {
-    system("shutdown -P now");
+    system("sudo shutdown -P now");
     return 0;
 }
