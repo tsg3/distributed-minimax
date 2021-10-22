@@ -3,6 +3,6 @@
 
 int main()
 {
-    printf("Hello World!\n");
+    configure_id('0');
     return 0;
 }
