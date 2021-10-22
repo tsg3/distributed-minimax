@@ -44,6 +44,16 @@ int unmap_physical(void* virtual_base)
 
 int configure_id(char id)
 {
+    return configure_led_r(id, 1);
+}
+
+int configure_state(char state)
+{
+    return configure_led_r(state, 9);
+}
+
+int configure_led_r(char value, int offset)
+{
     volatile int* LEDR_ptr;
     int fd = -1;
     void* LW_virtual;
@@ -59,7 +69,8 @@ int configure_id(char id)
     }
 
     LEDR_ptr = (unsigned int*)(LW_virtual + (LED_PIO_BASE & HW_REGS_MASK));
-    *LEDR_ptr = *LEDR_ptr + 1;
+
+    toggle_led_r_bits(LEDR_ptr, value, offset);
 
     if (unmap_physical(LW_virtual) == -1)
     {
@@ -70,7 +81,21 @@ int configure_id(char id)
     return 0;
 }
 
-int configure_state(char state);
+void toggle_led_r_bits(volatile int* LEDR_ptr, char value, int offset)
+{
+    *LEDR_ptr = BIT_CLEAR(*LEDR_ptr, offset);
+    *LEDR_ptr = BIT_CLEAR(*LEDR_ptr, offset - 1);
+
+    if (BIT_CHECK(value, 0) == 1)
+    {
+        *LEDR_ptr = BIT_SET(*LEDR_ptr, offset - 1);
+    }
+
+    if (BIT_CHECK(value, 1) == 1)
+    {
+        *LEDR_ptr = BIT_SET(*LEDR_ptr, offset);
+    }
+}
 
 int shutdown_system()
 {

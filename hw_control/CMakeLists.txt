@@ -15,13 +15,16 @@ add_subdirectory(src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 
-add_executable(test_controller main.c)
+add_executable(test_ids test_ids.c)
+add_executable(test_states test_states.c)
 add_executable(test_shutdown test_shutdown.c)
 
-target_link_libraries(test_controller HWController)
-target_link_libraries(test_shutdown HWController)   
+target_link_libraries(test_ids HWController)
+target_link_libraries(test_states HWController)
+target_link_libraries(test_shutdown HWController) 
 
-install(TARGETS test_controller DESTINATION bin)
+install(TARGETS test_ids DESTINATION bin)
+install(TARGETS test_states DESTINATION bin)
 install(TARGETS test_shutdown DESTINATION bin)
 
 set(MAJOR "1")
