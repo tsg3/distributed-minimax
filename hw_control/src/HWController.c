@@ -13,7 +13,7 @@ int open_physical(int fd)
     return fd;
 }
 
-void close_physical (int fd)
+void close_physical(int fd)
 {
     close(fd);
 }
@@ -52,18 +52,39 @@ int configure_state(char state)
     return configure_led_r(state, 9);
 }
 
+int opening_space(int* fd, void** LW_virtual)
+{
+    if ((*fd = open_physical(*fd)) == -1)
+    {
+        return -1;
+    }
+
+    if ((*LW_virtual = map_physical(*fd)) == NULL)
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+int closing_space(int* fd, void** LW_virtual)
+{
+    if (unmap_physical(*LW_virtual) == -1)
+    {
+        return -1;
+    }
+
+    close_physical(*fd);
+    return 0;
+}
+
 int configure_led_r(char value, int offset)
 {
     volatile int* LEDR_ptr;
     int fd = -1;
     void* LW_virtual;
 
-    if ((fd = open_physical(fd)) == -1)
-    {
-        return -1;
-    }
-
-    if ((LW_virtual = map_physical(fd)) == NULL)
+    if (opening_space(&fd, &LW_virtual) == -1)
     {
         return -1;
     }
@@ -72,13 +93,7 @@ int configure_led_r(char value, int offset)
 
     toggle_led_r_bits(LEDR_ptr, value, offset);
 
-    if (unmap_physical(LW_virtual) == -1)
-    {
-        return -1;
-    }
-
-    close_physical(fd);
-    return 0;
+    return closing_space(&fd, &LW_virtual);
 }
 
 void toggle_led_r_bits(volatile int* LEDR_ptr, char value, int offset)
@@ -101,4 +116,46 @@ int shutdown_system()
 {
     system("sudo shutdown -P now");
     return 0;
+}
+
+int check_shutdown()
+{
+    volatile int* LEDR_ptr;
+    int fd = -1;
+    void* LW_virtual;
+
+    if (opening_space(&fd, &LW_virtual) == -1)
+    {
+        return -1;
+    }
+
+    LEDR_ptr = (unsigned int*)(LW_virtual + (LED_PIO_BASE & HW_REGS_MASK));
+    int res = BIT_CHECK(*LEDR_ptr, 4);
+
+    if (closing_space(&fd, &LW_virtual) == -1)
+    {
+        return -1;
+    }
+
+    return res;
+}
+
+int wait_continue()
+{
+    volatile int* LEDR_ptr;
+    int fd = -1;
+    void* LW_virtual;
+
+    if (opening_space(&fd, &LW_virtual) == -1)
+    {
+        return -1;
+    }
+
+    LEDR_ptr = (unsigned int*)(LW_virtual + (LED_PIO_BASE & HW_REGS_MASK));
+    while (BIT_CHECK(*LEDR_ptr, 5) != 1)
+    {
+        usleep(500);
+    }
+
+    return closing_space(&fd, &LW_virtual);
 }

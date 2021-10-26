@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <stdbool.h>
 
 #define BIT_SET(n, b) ((n) |= (1ULL << (b)))
 #define BIT_CLEAR(n, b) ((n) &= ~(1ULL << (b)))
@@ -24,9 +25,14 @@ int unmap_physical(void*);
 int configure_id(char);
 int configure_state(char);
 
+int opening_space(int* fd, void** LW_virtual);
+int closing_space(int*, void**);
+
 int configure_led_r(char, int);
 void toggle_led_r_bits(volatile int*, char, int);
 
 int shutdown_system();
+int check_shutdown();
+int wait_continue();
 
 #endif
