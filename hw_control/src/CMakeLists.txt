@@ -10,3 +10,5 @@ add_library(${LIBRARY_NAME} SHARED HWController.c ${INCLUDE_FILES})
 
 install(TARGETS ${LIBRARY_NAME} DESTINATION lib)
 install(FILES ${INCLUDE_FILES} DESTINATION include)
+
+install(FILES Makefile push_button_mod.c DESTINATION mod)
