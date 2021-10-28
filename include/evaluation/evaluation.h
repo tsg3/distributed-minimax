@@ -16,6 +16,16 @@ typedef struct Measure
     struct Measure* next;
 } Measure;
 
+typedef struct NodeInfo
+{
+    char node_id;
+    Measure* cpu_measures;
+    Measure* ram_measures;
+} NodeInfo;
+
+char node;
+NodeInfo* node_measures;
+
 double wall_seconds;
 
 time_t first_time;
@@ -27,8 +37,6 @@ unsigned long hertz;
 unsigned long num_processors;
 unsigned long page_size;
 
-Measure* CPU_list;
-Measure* RAM_list;
 char* stat_path;
 char* statm_path;
 
@@ -51,6 +59,6 @@ void get_cpu_usage(time_t);
 void get_ram_usage(time_t);
 
 void add_measure(Measure**, double, double);
-void free_lists();
+void free_node_info();
 
 #endif

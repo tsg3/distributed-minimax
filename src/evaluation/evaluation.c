@@ -24,7 +24,10 @@ void* eval_main()
 
 void init_evaluation_module()
 {
-    CPU_list = NULL;
+    node_measures = (NodeInfo*)malloc(sizeof(NodeInfo));
+    node_measures->node_id = node;
+    node_measures->cpu_measures = NULL;
+    node_measures->ram_measures = NULL;
 
     char* prefix = "/proc/";
     pid_t pid = getpid();
@@ -116,7 +119,8 @@ void get_cpu_usage(time_t current_time)
 
     fclose(fd);
 
-    add_measure(&CPU_list, usage, (double)(current_time - first_time));
+    add_measure(&(node_measures->cpu_measures), 
+        usage, (double)(current_time - first_time));
 }
 
 void get_ram_usage(time_t current_time)
@@ -136,7 +140,8 @@ void get_ram_usage(time_t current_time)
 
     fclose(fd);
 
-    add_measure(&RAM_list, resident, (double)(current_time - first_time));
+    add_measure(&(node_measures->ram_measures), 
+        resident, (double)(current_time - first_time));
 }
 
 void add_measure(Measure** list, double value, double time)
@@ -162,23 +167,25 @@ void add_measure(Measure** list, double value, double time)
     }
 }
 
-void free_lists()
+void free_node_info()
 {
-    Measure* temp = CPU_list;
-    while (CPU_list != NULL)
+    Measure* temp = node_measures->cpu_measures;
+    while (node_measures->cpu_measures != NULL)
     {
-        temp = CPU_list;
-        CPU_list = temp->next;
+        temp = node_measures->cpu_measures;
+        node_measures->cpu_measures = temp->next;
         free(temp);
     }
 
-    temp = RAM_list;
-    while (RAM_list != NULL)
+    temp = node_measures->ram_measures;
+    while (node_measures->ram_measures != NULL)
     {
-        temp = RAM_list;
-        RAM_list = temp->next;
+        temp = node_measures->ram_measures;
+        node_measures->ram_measures = temp->next;
         free(temp);
     }
+
+    free(node_measures);
 
     if (stat_path != NULL)
     {

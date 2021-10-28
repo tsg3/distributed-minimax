@@ -6,6 +6,8 @@
 
 int main () 
 {
+    node = '1'; // Node number
+
     init_chess_models();
     conf = configure_minimax();
 
@@ -38,7 +40,7 @@ int main ()
 
     export_report();
 
-    free_lists();
+    free_node_info();
     
     return 0;
 }
