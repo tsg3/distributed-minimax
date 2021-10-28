@@ -107,12 +107,7 @@ void get_cpu_usage(time_t current_time)
         usage = 0.0;
     }
     else
-    {
-        // Average Load
-        // usage = (100 / num_processors) * ((
-        //     (double) (total - last_cpu_usage_times) 
-        //     / hertz) / period);
-        
+    {      
         usage = 100 * (((double) (total - last_cpu_usage_times) 
             / hertz) / period);
     }

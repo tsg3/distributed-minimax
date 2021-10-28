@@ -32,8 +32,6 @@ int calc_level(State* state, int level)
     int last_dir[2], last_pos[2], res[2], possibility;
     Piece* temp = state->turn ? state->whitePieces : state->blackPieces;
 
-    printf(" > Beginning of level %d\n", level);
-
     while (temp != NULL)
     {
         last_dir[0] = -2;
@@ -43,8 +41,6 @@ int calc_level(State* state, int level)
         res[0] = -2;
         res[1] = -2;
 
-        printf("-> %c\n", temp->type);
-
         while (true)
         {
             calcMove(state, temp, last_dir, last_pos, res, true);
@@ -53,8 +49,6 @@ int calc_level(State* state, int level)
             {
                 break;
             }
-
-            printf("%d %d -> (%d, %d) [%c]\n", last_dir[0], last_dir[1], res[0], res[1], temp->type);
 
             if (temp->type == 'P' 
                 && ((res[1] == 7 && state->turn) 
@@ -77,7 +71,6 @@ int calc_level(State* state, int level)
                     {
                         continue;
                     }
-                    printf(" > %d\n", possibility);
 
                     resp = minmax(resp, possibility, level);
                 }
@@ -120,8 +113,6 @@ back_propagation:
         {
             break;
         }
-
-        printf("Castle on level: %d | P%d -> castle #%d\n", level, state->turn, count);
 
         castle(state, count, &king, &rook, (int*)king_pos, (int*)rook_pos);
 

@@ -22,7 +22,7 @@ int main ()
     cpu_time_elapsed = clock();
     gettimeofday(&wall_start, NULL);
 
-    printf("Result: %d\n", calc_level(conf->initial_state, 0));
+    calc_level(conf->initial_state, 0);
 
     cpu_time_elapsed = clock() - cpu_time_elapsed;
     gettimeofday(&wall_stop, NULL);
@@ -33,30 +33,8 @@ int main ()
 
     wall_seconds = (double)(wall_stop.tv_usec - wall_start.tv_usec) / 1000000
         + (double)(wall_stop.tv_sec - wall_start.tv_sec);
-    printf("Time taken: %.6f\n", wall_seconds);
 
     pthread_join(eval_thread_id, NULL);
-
-    printf("Total time -> %.6f (%.6f) seconds\n", 
-        (double)time_elapsed, ((double)cpu_time_elapsed) / CLOCKS_PER_SEC);
-
-    Measure* temp = CPU_list;
-    int i = 0;
-    while (temp != NULL)
-    {
-        printf("CPU measure #%d at [%.2f seconds] -> CPU : %f\n", i, temp->time, temp->value);
-        temp = temp->next;
-        i++;
-    }
-
-    temp = RAM_list;
-    i = 0;
-    while (temp != NULL)
-    {
-        printf("RAM measure #%d at [%.2f seconds] -> RAM : %f\n", i, temp->time, temp->value);
-        temp = temp->next;
-        i++;
-    }
 
     export_report();
 
