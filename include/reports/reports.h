@@ -9,5 +9,6 @@
 void write_report(char*);
 cJSON* build_measures_array(Measure*);
 void export_report();
+cJSON* build_node_info(NodeInfo*);
 
 #endif

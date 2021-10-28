@@ -47,6 +47,8 @@ cJSON* build_measures_array(Measure* measures)
 
 void export_report()
 {
+    NodeInfo *node_2 = NULL, *node_3 = NULL, *node_4 = NULL; // All nodes support
+
     cJSON* json_object = cJSON_CreateObject();
 
     cJSON* json_error_found = cJSON_CreateFalse(); // Suppose error_found = false
@@ -62,15 +64,27 @@ void export_report()
     cJSON_AddItemToObject(json_object, "tiempo_cpu", json_cpu_time);
 
     cJSON* json_nodes = cJSON_CreateObject();
-    cJSON* json_node_1 = cJSON_CreateObject();
 
-    cJSON* json_usage = build_measures_array(CPU_list);
-    cJSON_AddItemToObject(json_node_1, "cpu", json_usage);
-
-    json_usage = build_measures_array(RAM_list);
-    cJSON_AddItemToObject(json_node_1, "ram", json_usage);
-    
+    cJSON* json_node_1 = build_node_info(node_measures);
     cJSON_AddItemToObject(json_nodes, "nodo_1", json_node_1);
+
+    cJSON* json_node_temp;
+    if (node_2 != NULL)
+    {
+        json_node_temp = build_node_info(node_2);
+        cJSON_AddItemToObject(json_nodes, "nodo_2", json_node_temp);
+    }
+    if (node_3 != NULL)
+    {
+        json_node_temp = build_node_info(node_3);
+        cJSON_AddItemToObject(json_nodes, "nodo_3", json_node_temp);
+    }
+    if (node_4 != NULL)
+    {
+        json_node_temp = build_node_info(node_4);
+        cJSON_AddItemToObject(json_nodes, "nodo_4", json_node_temp);
+    }
+
     cJSON_AddItemToObject(json_object, "nodos", json_nodes);
 
     char* json_string = cJSON_Print(json_object);
@@ -79,4 +93,17 @@ void export_report()
 
     cJSON_Delete(json_object);
     free(json_string);
+}
+
+cJSON* build_node_info(NodeInfo* node_info)
+{
+    cJSON* json_node = cJSON_CreateObject();
+
+    cJSON* json_usage = build_measures_array(node_info->cpu_measures);
+    cJSON_AddItemToObject(json_node, "cpu", json_usage);
+
+    json_usage = build_measures_array(node_info->ram_measures);
+    cJSON_AddItemToObject(json_node, "ram", json_usage);
+
+    return json_node;
 }
