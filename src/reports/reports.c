@@ -55,7 +55,7 @@ void export_report()
     cJSON* json_error = cJSON_CreateString(""); // Suppose error = ""
     cJSON_AddItemToObject(json_object, "error", json_error);
 
-    cJSON* json_wall_time = cJSON_CreateNumber((double)time_elapsed);
+    cJSON* json_wall_time = cJSON_CreateNumber(wall_seconds);
     cJSON_AddItemToObject(json_object, "tiempo_real", json_wall_time);
 
     cJSON* json_cpu_time = cJSON_CreateNumber(((double)cpu_time_elapsed) / CLOCKS_PER_SEC);

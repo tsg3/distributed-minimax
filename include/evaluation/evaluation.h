@@ -16,6 +16,8 @@ typedef struct Measure
     struct Measure* next;
 } Measure;
 
+double wall_seconds;
+
 time_t first_time;
 time_t time_elapsed;
 
