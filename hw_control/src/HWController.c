@@ -1,3 +1,11 @@
+/**
+ * @file HWController.c
+ * @author Esteban Campos Granados (este0111@hotmail.com)
+ * @brief Hardware Controller source code.
+ * @version 0.1
+ * @date 2021-10-29
+ */
+
 #include <HWController.h>
 
 int open_physical(int fd)

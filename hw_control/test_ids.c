@@ -1,5 +1,21 @@
+/**
+ * @file test_ids.c
+ * @author Esteban Campos Granados (este0111@hotmail.com)
+ * @brief Testing of 'configure_id'.
+ * @version 0.1
+ * @date 2021-10-29
+ */
+
 #include <stdio.h>
 #include <HWController.h>
+
+/** @fn main
+ * @brief Main execution method.
+ * 
+ * Tests 'configure_id' method from the Hardware Controller library.
+ * 
+ * @return int 
+ */
 
 int main()
 {
