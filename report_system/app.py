@@ -1,31 +1,56 @@
-import json
-from logging import exception
-import tkinter as tk
+##
+# @file app.py
+#
+# @author Esteban Campos Granados (este0111@hotmail.com)
+#
+# @brief Report visualization system.
+#
+# @version 0.1
+#
+# @date 2021-10-29
+#
 
+# Imports
+## JSON
+import json
+## Tkinter
+import tkinter as tk
+## Matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from numpy.core.fromnumeric import size
 
+# Global variables
+## CPU and RAM node info buttons.
 button_node_1 = None
 button_node_2 = None
 button_node_3 = None
 button_node_4 = None
-
+## State of node info buttons.
+plts_available = [None, None, None, None]
+## Tkinter label widgets.
 lbl_real_time_value = None
 lbl_cpu_time_value = None
 lbl_error_found_value = None
 lbl_error = None
-
+## Current node being visualized.
 current_plts_pos = None
+## Current report's nodes info.
 nodes_info = None
-plts_available = [None, None, None, None]
-
+## Matplotlib figures.
 fig_cpu = None
 fig_ram = None
+## Tkinter canvases for node graphics.
 canvas_cpu = None
 canvas_ram = None
 
+# Functions
 def get_data(measures_list):
+    """! Obtains all the info with regard of a group of measures from a report.
+
+    @param measures_list    Node's RAM or CPU measures form a report.
+
+    @return List containing the time and value of all the measures.
+    """
     data = [0,]
     times = [0,]
 
@@ -36,6 +61,16 @@ def get_data(measures_list):
     return (times, data)
 
 def create_plots(id):
+    """! Builds the plot figures according to the current loaded report.
+
+    Gets all the data from the node measures and buildsthe graphics. Also, it configures
+    the plot's title, axis' labels, grid and presentation; and draws the final plot into
+    the graphical figure.
+
+    @param id   Node's integer identifier (from 1 to 4).
+
+    @return None
+    """
     fig_cpu.clear()
     data_cpu = get_data(nodes_info[f"nodo_{id}"]["cpu"])
     plt = fig_cpu.add_subplot()
@@ -59,23 +94,22 @@ def create_plots(id):
     canvas_cpu.draw()
     canvas_ram.draw()
 
-def set_figures(report):
+def set_figures(info):
+    """! Loads the figure construction for the GUI.
+
+    Sets the current nodes' info dictionary and the nodes' Tkinter buttons state.
+    Then, it loads the construction of the plot of the first available and reported node.
+
+    @param info Current loaded report's nodes' info.
+
+    @return None
+    """
     global current_plts_pos
     global nodes_info
     global plts_available
 
-    nodes_info = report["nodos"]
+    nodes_info = info
     current_plts_pos = None
-
-    data_cpu = get_data(report["nodos"]["nodo_1"]["cpu"])
-    plt = fig_cpu.add_subplot()
-    plt.plot(data_cpu[0], data_cpu[1])
-    plt.grid(True)
-    plt.set_title("Consumo de CPU en el tiempo del Nodo 1")
-    plt.set_ylabel("Consumo de CPU (%)")
-    plt.set_xlabel("Tiempo (s)")
-    plt.remove()
-    fig_cpu.axes.append(plt)
 
     try:
         _ = nodes_info["nodo_1"]
@@ -114,20 +148,30 @@ def set_figures(report):
 
     change_to_plot(current_pos + 1)
 
-    canvas_cpu.draw()
-    canvas_ram.draw()
-
 def set_current_report(report):
+    """! Replaces the last loaded report.
+
+    Checks that all required attibutes are all present in the JSON report and if there's
+    no problem parsing them. If everything's valid, sets the text of the different
+    Tkinter labels and invokes 'set_figures' with the nodes' info JSON array.
+
+    @param report   New loaded report.
+
+    @return Tkinter error messagebox if there's an error parsing the file.
+        Otherwise, None.
+    """
     string_real_time = None
     string_cpu_time = None
     boolean_error = None
     string_error = None
+    nodes = None
 
     try:
         string_real_time = f"{report['tiempo_real']} s"
         string_cpu_time = f"{report['tiempo_cpu']} s"
         boolean_error = report['error_encontrado']
-        string_error = f"{report['error']}"
+        string_error = report['error']
+        nodes = report["nodos"]
     except Exception as e:
         print(e)
         return tk.messagebox.showerror(
@@ -145,9 +189,19 @@ def set_current_report(report):
         lbl_error_found_value.configure(text="Exitosa", fg="#00FF00")
         lbl_error.configure(text="")
 
-    set_figures(report)
+    set_figures(nodes)
 
 def browse_report():
+    """! Lets the user load a specific JSON report from the filesystem.
+
+    This function shows a Tkinter filedialog window to let the user choose a specific
+    report, in JSON format, to load. If the file's format is valid, calls 
+    'set_current_report' with the loaded report to check the different attributes validity
+    and configure the GUI's widgets.
+
+    @return Tkinter error messagebox if there's an error parsing the file. 
+        Otherwise, None.
+    """
     filename = tk.filedialog.askopenfilename(
         initialdir = "~/",
         title = "Selecciona el reporte",
@@ -172,18 +226,38 @@ def browse_report():
     return set_current_report(report)
 
 def open_report_as_dict(path):
+    """! Opens a JSON formatted file as a python dictionary.
+
+    @param path File's absolute path.
+
+    @return Python dictionary.
+    """
     with open(path) as json_file:
         data = json.load(json_file)
     
     return data
 
 def change_to_plot_aux(id):
+    """! Invokes the construction of the info graphics for a specific node.
+
+    Also, sets the current node being visualized.
+
+    @param id   Node's integer identifier (from 1 to 4).
+
+    @return None
+    """
     global current_plts_pos
 
     create_plots(id)
     current_plts_pos = id
 
 def change_to_plot(id):
+    """! Invokes the auxiliary 'change_to_plot_aux' function to build the info graphics.
+
+    @param id   Node's integer identifier (from 1 to 4).
+
+    @return None
+    """
     if id == current_plts_pos:
         return
 
@@ -199,14 +273,17 @@ def change_to_plot(id):
     elif id == 4 and plts_available[3] == tk.ACTIVE:
         change_to_plot_aux(4)
 
+# Main script
 if __name__ == "__main__":
-    # Root container
+    """! Initializes the program """
+
+    ## Root container
 
     root = tk.Tk()
     root.title("Sistema de visualización")
     root.config(bg="#f1f1f1")
 
-    # Main containers
+    ## Main containers
 
     info_canvas = tk.Canvas(root, bg="#f1f1f1")
     info_canvas.grid_columnconfigure(2, weight=1)
@@ -214,7 +291,7 @@ if __name__ == "__main__":
     scroll_v = tk.Scrollbar(root, command=scroll_canvas.yview)
     scroll_h = tk.Scrollbar(root, command=scroll_canvas.xview, orient="horizontal")
 
-    # Scrollable Frame
+    ## Scrollable Frame
 
     right_frame = tk.Frame(scroll_canvas, bg="#f1f1f1")
 
@@ -225,7 +302,7 @@ if __name__ == "__main__":
 
     right_frame.pack(fill="both", expand=True)
 
-    # Scroll configuration
+    ## Scroll configuration
 
     right_frame.bind(
         "<Configure>",
@@ -240,7 +317,7 @@ if __name__ == "__main__":
 
     scroll_canvas.configure(xscrollcommand=scroll_h.set)
 
-    # 'info_canvas' widgets
+    ## 'info_canvas' widgets
 
     button_explore = tk.Button(info_canvas, text="Cargar reporte", command=browse_report)
     button_explore.grid(row=0, column=0, sticky=tk.E + tk.N + tk.S + tk.W)
@@ -269,7 +346,7 @@ if __name__ == "__main__":
     lbl_error = tk.Label(info_canvas, bg="#f1f1f1")
     lbl_error.grid(row=4, column=1, sticky=tk.W, columnspan=2)
 
-    # 'right_frame' widgets
+    ## 'right_frame' widgets
 
     button_node_1 = tk.Button(right_frame, text="Nodo 1", state=tk.DISABLED, 
         command = lambda: change_to_plot(1))
