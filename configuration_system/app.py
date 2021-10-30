@@ -1,3 +1,16 @@
+##
+# @file app.py
+#
+# @author Esteban Campos Granados (este0111@hotmail.com)
+#
+# @brief Algorithm configuration system.
+#
+# @version 0.1
+#
+# @date 2021-10-29
+#
+
+# Imports
 import os
 import json
 
@@ -8,30 +21,74 @@ import tkinter.ttk as ttk
 from PIL import Image as img
 from PIL import ImageTk as imgtk
 
+# Global variables
+## Dictionary of images for cells.
 pieces_images = {}
+## Dictionary with dentifiers for every type of cell value (piece).
 pieces_id = {}
+## Identifier of selected piece type.
 current_id = None
+## Matrix of buttons.
 buttons = []
+## Selected piece type.
 selected_lbl = None
+## List with the values of each cell.
 matrix = []
+## Value of the corresponding current selected piece.
 selected_value = None
+## Topology's combobox widget.
 topology_combobox = None
+## Nodes' checkboxes boolean variables.
 node1_value = None
 node2_value = None
 node3_value = None
 node4_value = None
+## Topology's combobox widget.
 turn_combobox = None
+## Iterations entry widget.
 iters_entry = None
 
+#Functions
 def set_bit_segment(row, column, segment):
+    """! Sets piece identifier into a cell in the matrix.
+
+    @param row      Cell's row.
+    @param column   Cell's column.
+    @param segment  Piece identifier.
+
+    @return None
+    """
     global matrix
-    matrix[row] = (matrix[row] & (0xFFFFFFFF ^ (0xFF << (4 * column)))
+    matrix[row] = (matrix[row] & (0xFFFFFFFF ^ (0xF << (4 * column)))
         | (segment << (4 * column)))
 
 def reverse_in_range(max, min, num):
+    """! Reverse a number with regard to a specific range of numbers.
+
+    @param max  Maximun value in range.
+    @param min  Minimun value in range.
+    @param num  Number to reverse.
+
+    @return Number reverse in the range.
+
+    Example: num=2 & range=[1:7] -> return 6
+    """
     return (max + min) - num
 
 def get_char(type_int):
+    """! Returns the char corresponding with the piece identifier.
+
+    1: Pawn
+    2: Rook
+    3: kNight
+    4: Bishop
+    5: Queen
+    6: King
+
+    @param type_int Piece integer Identifier.
+
+    @return Correspondent char identifier.
+    """
     if type_int == 1:
         return "P"
     elif type_int == 2:
@@ -47,6 +104,12 @@ def get_char(type_int):
     return ""
 
 def check_iter(string):
+    """! Checks if a string can represent a positive integer.
+
+    @param string   Amount of iterations.
+
+    @return True if the string is a positive integer, otherwise it returns False.
+    """
     try:
         value = int(string)
         if value > 0:
@@ -56,6 +119,12 @@ def check_iter(string):
         return False
 
 def check_table(table):
+    """! Checks if the state of the chess board is valid.
+
+    @param table    Chess board state.
+
+    @return True if the state represents a valid position, otherwise it returns False.
+    """
     white_kings = 0
     white_pawns = 0
     white_other = 0
@@ -98,6 +167,13 @@ def check_table(table):
     return True
 
 def set_image(row, column):
+    """! Sets a piece identifier and image to a specific cell on the board.
+
+    @param row      Cell's row.
+    @param column   Cell's column.
+
+    @return None
+    """
     global buttons
     global matrix
 
@@ -105,6 +181,13 @@ def set_image(row, column):
     set_bit_segment(row, column, selected_value)
 
 def set_current_id(row, column):
+    """! Sets the current piece identifier used to place pieces on the board.
+
+    @param row      Piece widget's row.
+    @param column   Piece widget's column.
+
+    @return None
+    """
     global selected_lbl
     global current_id
     global selected_value
@@ -119,6 +202,14 @@ def set_current_id(row, column):
     selected_value = tmp if row < 3 else tmp + 8
 
 def send_file():
+    """! Creates and sends the configuration file.
+
+    This functions checks all the input entered and the validity of the board state. If
+    everything's valid, it builds the configuration JSON file and sends it to the remote
+    system through SSH.
+
+    @return None
+    """
     iters = iters_entry.get()
     if not check_iter(iters):
         msgbox.showerror(title="Formato", 
@@ -162,6 +253,13 @@ def send_file():
     file.close()
 
 def set_initial_position():
+    """! Establishes the common initial position on the board.
+
+    This function erases the current state of the board's matrix, and replaces it with
+    the common initial or first position of a chess game. 
+
+    @return None
+    """
     global buttons
     global current_id
     global selected_lbl
@@ -248,6 +346,12 @@ def set_initial_position():
     selected_value = 0
 
 def clean_table():
+    """! Cleans the current position of the board.
+
+    This function erases the current state of the board's matrix.
+
+    @return None
+    """
     global buttons
     global current_id
     global selected_lbl
@@ -264,11 +368,30 @@ def clean_table():
     selected_value = 0
 
 def set_cell_color(cell):
+    """! Set's the color of a cell on the board.
+
+    @param cell Cell's position computed with its X and Y position.
+
+    @return Hex value of the corresponding color.
+    """
     return "#efc56f" if (cell & 0b1) == 0 else "#655b3f"
 
 def create_button(root, width, height, row, column, 
     bg=None, a_bg=None, image=None, command=None):
+    """! Creates a custom Tkinter button widget.
 
+    @param root     Tkinter container where the button will be placed.
+    @param width    Button's width.
+    @param height   Button's height.
+    @param row      Button's X position.
+    @param column   Button's Y position.
+    @param bg       Button's background color.          Default: None
+    @param a_bg     Button's active background color.   Default: None
+    @param image    Button's image.                     Default: None
+    @param command  Button's custom command.            Default: None
+
+    @return Tkinter button widget.
+    """
     button = tk.Button(root)
 
     if bg != None:
@@ -306,6 +429,12 @@ def create_button(root, width, height, row, column,
     return button
 
 def create_image(name):
+    """! Loads and creates a Tkinter piece image for the buttons.
+
+    @param name Filename of the '.png' file.
+
+    @return A Tkinter image.
+    """
     if (name == "pixel"):
         return tk.PhotoImage(width=1, height=1)
     
@@ -323,6 +452,17 @@ def create_image(name):
     return imgtk.PhotoImage(resized_image)
 
 def create_label(root, text, row, column, columnspan, sticky=None):
+    """! Creates and configures a custom Tkinter labels.
+
+    @param root         Container of the label.
+    @param text         Label's text string value.
+    @param row          Label's X position.
+    @param column       Label's Y position.
+    @param columnspan   Label's grid columnspan value.
+    @param sticky       Label's sticky value. Default: None.
+
+    @return A Tkinter label.
+    """
     label = tk.Label(root)
     label.config(text=text, bg="#f1f1f1")
     label.grid(row=row, column=column, columnspan=columnspan)
@@ -332,7 +472,8 @@ def create_label(root, text, row, column, columnspan, sticky=None):
 
     return label
 
-if "__name__":
+if __name__ == "__main__":
+    """! Main. Initializes the program. """
     # init
 
     root = tk.Tk()
