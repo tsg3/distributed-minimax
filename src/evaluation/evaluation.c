@@ -1,5 +1,19 @@
+/**
+ * @file evaluation.c
+ * @author Esteban Campos Granados (este0111@hotmail.com)
+ * @brief Evaluation module source file.
+ * @version 0.1
+ * @date 2021-10-31
+ */
+
 #include <evaluation/evaluation.h>
 
+/**
+ * Evaluation thread execution loop. 
+ * 
+ * First, it initialize all variables needed for the evaluation module. Then, it
+ * continuously captures CPU and RAM usage until minimax execution finishes.
+ */
 void* eval_main()
 {
     init_evaluation_module();
@@ -21,7 +35,9 @@ void* eval_main()
     pthread_exit(NULL);
 }
 
-
+/**
+ * Initializes variables.
+ */
 void init_evaluation_module()
 {
     node_measures = (NodeInfo*)malloc(sizeof(NodeInfo));
@@ -60,22 +76,34 @@ void init_evaluation_module()
     start_time();
 }
 
+/**
+ * Initializes the start time.
+ */
 void start_time()
 {
     first_time = time(NULL);
     last_time = first_time;
 }
 
+/**
+ * Retrieves current time in seconds.
+ */
 time_t get_current_time()
 {
     return time(NULL);
 }
 
+/**
+ * Sets the elapsed time (only used by this module).
+ */
 void end_time()
 {
     time_elapsed = time(NULL) - first_time;
 }
 
+/**
+ * Opens a file at a specific path and returns its file descriptor.
+ */
 FILE* open_file(char* path)
 {
     FILE* fd = fopen(path, "r");
@@ -86,6 +114,13 @@ FILE* open_file(char* path)
     return fd;
 }
 
+/**
+ * Captures the current CPU usage.
+ * 
+ * After opening the file, it looks for the cpu time consumed on the last period of time.
+ * Then, it computes the percentage of CPU usage, and adds it to the node's CPU measures
+ * list. 
+ */
 void get_cpu_usage(time_t current_time)
 {
     FILE* fd = open_file(stat_path);
@@ -123,6 +158,13 @@ void get_cpu_usage(time_t current_time)
         usage, (double)(current_time - first_time));
 }
 
+/**
+ * Captures the current RAM usage.
+ * 
+ * After opening the file, it looks for the resident set size (Rss) reported in pages.
+ * Then, it converts this value to kilobytes (KB), and adds it to the node's RAM measures
+ * list. 
+ */
 void get_ram_usage(time_t current_time)
 {
     FILE* fd = open_file(statm_path);
@@ -167,6 +209,12 @@ void add_measure(Measure** list, double value, double time)
     }
 }
 
+/**
+ * Frees the memory allocated for the evaluation module.
+ * 
+ * It deallocates the RAM and CPU lists, the NodeInfo struct, and the char arrays
+ * 'stat_path' and 'statm_path' for the files.
+ */
 void free_node_info()
 {
     Measure* temp = node_measures->cpu_measures;
