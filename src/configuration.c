@@ -1,5 +1,16 @@
 #include <configuration.h>
 
+/**
+ * Executes the configuration of the minimax algorithm.
+ * 
+ * First, it opens and reads the content of '~/conf_minimax', which is the path of the
+ * configuration file.
+ * Then, it parses each of the attributes in the JSON-formatted file, and invokes the
+ * parsing methods to check if all the data is valid.
+ * 
+ * In that case, the function returns a pointer to the minimax configuration struct. 
+ * If not, it returns NULL.
+ */
 Configuration* configure_minimax()
 {
     char* filename = "/conf_minimax";
@@ -77,6 +88,11 @@ parsing_error:
     return NULL;
 }
 
+/**
+ * Checks the topology in the configuration file and sets it to a char variable.
+ * 
+ * The function returns true if the parsing succeds. If not, it returns false.
+ */
 bool check_topology(const cJSON* topology, char* conf)
 {
     if (topology == NULL)
@@ -107,6 +123,11 @@ bool check_topology(const cJSON* topology, char* conf)
     return false;
 }
 
+/**
+ * Checks the player in the configuration file and sets it to a bool variable.
+ * 
+ * The function returns true if the parsing succeds. If not, it returns false.
+ */
 bool check_turn(const cJSON* turn, bool* conf)
 {
     if (turn == NULL)
@@ -117,6 +138,11 @@ bool check_turn(const cJSON* turn, bool* conf)
     return cJSON_bool_to_bool(turn, conf);
 }
 
+/**
+ * Checks the iterations in the configuration file and sets them to a int variable.
+ * 
+ * The function returns true if the parsing succeds. If not, it returns false.
+ */
 bool check_iters(const cJSON* iters, int* conf)
 {
     if (iters == NULL)
@@ -133,6 +159,18 @@ bool check_iters(const cJSON* iters, int* conf)
     return false;
 }
 
+/**
+ * Checks the nodes selected in the configuration file and sets them to the configuration 
+ * struct.
+ * 
+ * First, it checks if the cJSON item is valid.
+ * 
+ * Then parses each of the four nodes' boolean value specified in the cJSON array object,
+ * and sets this values in the configuration struct.
+ * 
+ * The function returns true if the parsing succeds. If not, or if the array doesn't have
+ * four values, it returns false.
+ */
 bool check_nodes(const cJSON* nodes, Configuration* conf)
 {
     if (nodes == NULL)
@@ -178,12 +216,28 @@ bool check_nodes(const cJSON* nodes, Configuration* conf)
             size++;
         }
 
+        if (size != 5)
+        {
+            return false;
+        }
+
         return true;
     }
 
     return false;
 }
 
+/**
+ * Checks the pieces indicated in the configuration file and sets it to a state
+ * configuration struct.
+ * 
+ * First, it checks if the cJSON item is valid. In that case, the function returns 'true';
+ * otherwise, it returns 'false'.
+ * 
+ * Then parses each of the pieces objects specified in the cJSON array object, checking
+ * the validity of each of its attributes (X and Y positions, type and player). If the 
+ * parsing succeds, adds that piece to the state struct referenced by the 'state' pointer.
+ */
 bool check_pieces(const cJSON* item, State* state)
 {
     if (item == NULL || state == NULL)
@@ -246,6 +300,15 @@ bool check_pieces(const cJSON* item, State* state)
     return false;
 }
 
+/**
+ * Adds a piece in the list of pieces of a player in a chess state struct.
+ * 
+ * It checks the 'player' boolean parameter to checked to which player have the piece:
+ *  true:   White pieces player
+ *  false:  Black pieces player
+ * 
+ * Then, adds the piece to the corresponding list in the chess state struct.
+ */
 void add_piece(State* state, Piece* piece, bool player)
 {
     if (player)
@@ -285,6 +348,13 @@ void add_piece(State* state, Piece* piece, bool player)
     }
 }
 
+/**
+ * Sets the value of a bool variable according to the boolean value of a cJSON_bool
+ * object.
+ * 
+ * It also checks if the cJSON item is valid. In that case, the function returns 'true'
+ * (boolean value); otherwise, it returns 'false'.
+ */
 bool cJSON_bool_to_bool(const cJSON* item, bool* var)
 {
     if (cJSON_IsTrue(item))
@@ -302,6 +372,9 @@ bool cJSON_bool_to_bool(const cJSON* item, bool* var)
     return false;
 }
 
+/**
+ * Prints the variables' values of a configuration struct.
+ */
 void print_configuration(Configuration* conf)
 {
     if (conf == NULL)
@@ -341,6 +414,12 @@ void print_configuration(Configuration* conf)
     }
 }
 
+/**
+ * Frees the memory allocated for a configuration struct variable.
+ * 
+ * First, frees the state struct allocated in the configuration struct. Then, it proceeds
+ * to free the actual configuration struct memory.
+ */
 void delete_configuration(Configuration* conf)
 {
     if (conf->initial_state != NULL)

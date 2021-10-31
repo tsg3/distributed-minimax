@@ -1,10 +1,25 @@
+/**
+ * @file main.c
+ * @author Esteban Campos Granados (este0111@hotmail.com)
+ * @brief Main executable of the minimax evaluation system.
+ * @version 0.1
+ * @date 2021-10-31
+ */
+
 #include <stdio.h>
 #include <configuration.h>
 #include <evaluation/evaluation.h>
 #include <reports/reports.h>
 #include <sys/time.h>
 
-int main () 
+/** @fn main
+ * @brief Main execution method.
+ * 
+ * Initialization of the minimax evaluation system.
+ * 
+ * @return int 
+ */
+int main() 
 {
     node = '1'; // Node number
 
