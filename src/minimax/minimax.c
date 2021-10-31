@@ -1,15 +1,39 @@
+/**
+ * @file minimax.c
+ * @author Esteban Campos Granados (este0111@hotmail.com)
+ * @brief Minimax execution module header.
+ * @version 0.1
+ * @date 2021-10-31
+ */
+
 #include <minimax/minimax.h>
 
+/**
+ * Initiates variables of the chess models module.
+ * 
+ * It calls the initialization method of the chess module.
+ */
 void init_chess_models()
 {
     init();
 }
 
+/**
+ * Frees the 'temp_passant' variable.
+ * 
+ * It frees the memory allocated for the piece 'temp_passant', used for tracking of pawns
+ * for the 'en passant' move.
+ */
 void clean_passant_temp()
 {
     free(temp_passant);
 }
 
+/**
+ * It retrieves the maximun/minimum between two integers.
+ * 
+ * If level is even, returns the greater integer; otherwise, it returns the lesser.
+ */
 int minmax(int in_1, int in_2, int level)
 {
     if (level % 2 == 0)
@@ -23,8 +47,22 @@ int minmax(int in_1, int in_2, int level)
     }
 }
 
-// minimax algorithm
-
+/**
+ * Computation of minimax value at a certain level of a tree.
+ * 
+ * First, for each piece of the player of the current turn:
+ *  For each possible move of a piece:
+ *      Calls 'check_possible_final' to check if a final state is encountered.
+ *          If yes, its minimax value is considered for this level minimax value.
+ *          Otherwise, this function is called for this new subtree to obtain its
+ *          minimax value.
+ *      Note: If the move selected ends up in a pawn promotion, each piece promotion is
+ *      evaluated.
+ * Then, it checks if any type of castling is possible.
+ * 
+ * Finally, It returns the minimax value of the whole subtree considering each final state
+ * value obtained on that subtree.
+ */
 int calc_level(State* state, int level)
 {
     int resp = level % 2 == 0 ? INT_MIN : INT_MAX;
@@ -130,6 +168,12 @@ back_propagation:
     return resp;
 }
 
+/**
+ * It moves a piece to a new position and evaluates the minimax value of the new subtree.
+ * 
+ * First, the function makes the move indicated. Then, it returns the minimax value of
+ * the new subtree by calling 'calc_level' with a new level value.
+ */
 int calc_level_aux(State* state, int level, Piece* piece, int x, int y, char promotion)
 {
     if (level < 2) // replacement of the 50 move rule
@@ -160,6 +204,12 @@ int calc_level_aux(State* state, int level, Piece* piece, int x, int y, char pro
     return level % 2 == 0 ? INT_MIN : INT_MAX;
 }
 
+/**
+ * Makes the castling move and evaluates the minimax value of the new subtree.
+ * 
+ * Finally, returns the minimax value of the new subtree by calling 'calc_level' with a
+ * new level value.
+ */
 int calc_level_castle(State* state, int level, Piece* king, Piece* rook, int* king_pos, int* rook_pos)
 {
     if (level < 2) // replacement of the 50 move rule
@@ -207,6 +257,12 @@ int calc_level_castle(State* state, int level, Piece* king, Piece* rook, int* ki
     return level % 2 == 0 ? INT_MIN : INT_MAX;
 }
 
+/**
+ * Checks if after a move is made, the game ends.
+ * 
+ * It returns -2 if the game continues; otherwise, it returns the game value. If there's
+ * an error, -3 is returned.
+ */
 int check_possible_final(State* state, Piece* piece, int x, int y, char promotion)
 {
     State* possible_state = create_copy(state);
