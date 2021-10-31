@@ -1,3 +1,11 @@
+/**
+ * @file configuration.c
+ * @author Esteban Campos Granados (este0111@hotmail.com)
+ * @brief Minimax configuration module source file.
+ * @version 0.1
+ * @date 2021-10-31
+ */
+
 #include <configuration.h>
 
 /**
