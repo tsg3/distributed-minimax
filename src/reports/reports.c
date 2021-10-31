@@ -1,6 +1,17 @@
+/**
+ * @file reports.c
+ * @author Esteban Campos Granados (este0111@hotmail.com)
+ * @brief Reports module source file.
+ * @version 0.1
+ * @date 2021-10-31
+ */
+
 #include <reports/reports.h>
 
-void write_report(char* report_path)
+/**
+ * Writes a JSON-formatted report file in '~/report.json'.
+ */
+void write_report(char* report)
 {
     char* filename = "/report.json";
     char* path = (char*)malloc(strlen(getenv("HOME")) + strlen(filename) + 1);
@@ -16,11 +27,17 @@ void write_report(char* report_path)
 
     free(path);
 
-    fwrite(report_path, 1, strlen(report_path), fd);
+    fwrite(report, 1, strlen(report), fd);
 
     fclose(fd);
 }
 
+/**
+ * Create a cJSON array from a series of measures. 
+ * 
+ * Each one of this measures will be represented as a cJSON object, with two double
+ * values: 'porcentaje' and 'time'. Finally, it returns the cJSON array.
+ */
 cJSON* build_measures_array(Measure* measures)
 {
     cJSON* json_usage = cJSON_CreateArray();
@@ -45,6 +62,9 @@ cJSON* build_measures_array(Measure* measures)
     return json_usage;
 }
 
+/**
+ * Compiles all captured info from the evaluation module into a report.
+ */
 void export_report()
 {
     NodeInfo *node_2 = NULL, *node_3 = NULL, *node_4 = NULL; // All nodes support
@@ -95,6 +115,12 @@ void export_report()
     free(json_string);
 }
 
+/**
+ * Creates a cJSON object for the information captured in a node.
+ * 
+ * It returns a cJSON object containing all the data captured from the NodeInfo struct
+ * parameter.
+ */
 cJSON* build_node_info(NodeInfo* node_info)
 {
     cJSON* json_node = cJSON_CreateObject();
