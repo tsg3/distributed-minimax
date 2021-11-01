@@ -1,5 +1,16 @@
+/**
+ * @file chess.c
+ * @author Esteban Campos Granados (este0111@hotmail.com)
+ * @brief Chess models module source file.
+ * @version 0.1
+ * @date 2021-10-31
+ */
+
 #include "chess/chess.h"
 
+/**
+ * Initialize the chess directions arrays and 'temp_passant' pointer.
+ */
 void init()
 {
     directions[0][0] = -1;
@@ -39,8 +50,9 @@ void init()
     temp_passant = create_piece('X', -3, -4);
 }
 
-// Piece
-
+/**
+ * Creates a piece object.
+ */
 Piece* create_piece(char type, int x, int y)
 {
     Piece* piece = (Piece*)malloc(sizeof(Piece));
@@ -52,12 +64,18 @@ Piece* create_piece(char type, int x, int y)
     return piece;
 }
 
+/**
+ * Updates the position of a piece.
+ */
 void move(Piece *piece, int x, int y) 
 {
     piece->posX = x;
     piece->posY = y;
 }
 
+/**
+ * Searches for the next valid move for a piece.
+ */
 void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int res[], bool check_if_attacked) 
 {
     switch (piece->type) 
@@ -95,6 +113,9 @@ void calcMove(State* state, Piece *piece, int last_dir[], int last_pos[], int re
     }
 }
 
+/**
+ * Computes a new valid move for a bishop, queen or rook.
+ */
 void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int last_dir[], int last_pos[], int res[], bool check_if_attacked) 
 {
     if (last_dir[0] == -2 && last_dir[1] == -2
@@ -218,6 +239,9 @@ void calcMove_extended_aux(State* state, Piece* piece, int start, int step, int 
     }
 }
 
+/**
+ * Computes a new valid move for a knight or a king.
+ */
 void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_dir[], int res[], bool check_if_attacked)
 {
     if (last_dir[0] == 0 && last_dir[1] == -1)
@@ -315,6 +339,9 @@ void calcMove_single_aux(State* state, Piece* piece, int* movements, int last_di
     }
 }
 
+/**
+ * Computes a new valid move for a pawn.
+ */
 void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[], bool check_if_attacked)
 {
     int initial_pos = state->turn == true ? 1 : 6;
@@ -436,6 +463,15 @@ void calcMove_pawn_aux(State* state, Piece* piece, int last_dir[], int res[], bo
     res[1] = piece->posY;
 }
 
+/**
+ * Moves a piece on the game.
+ * 
+ * First, it checks for an enemy piece in the final position to captured it. Also, updates
+ * the castling values, it manages promotions and 'en passant' moves and checks the fifty
+ * movement rule.
+ * 
+ * Finally, updates the piece's position values with 'move'.
+ */
 void move_piece(State* state, Piece* piece, int x, int y, char promotion)
 {
     Piece* temp = state->turn ? state->blackPieces : state->whitePieces;
@@ -538,6 +574,13 @@ void move_piece(State* state, Piece* piece, int x, int y, char promotion)
     move(piece, x, y);
 }
 
+/**
+ * Searches for the next valid castle move.
+ * 
+ * Also, checks if any intermediate cell is being occupied or attacked.
+ * 
+ * It updates 'res' with the value of the next possible castle.
+ */
 void check_castling(State* state, int* res)
 {
     int castling = state->turn ? state->white_castling : state->black_castling;
@@ -571,6 +614,11 @@ void check_castling(State* state, int* res)
     }
 }
 
+/**
+ * Checks if a type of castle is valid in the current state.
+ * 
+ * It determines if the final castle position leaves the player's king in danger.
+ */
 bool check_castle_interrupt(State* state, int type)
 {
     int intermediate_cells[2][2];
@@ -682,6 +730,13 @@ bool check_castle_interrupt(State* state, int type)
     return false;
 }
 
+/**
+ * Looks for pieces and final positions of these after a castle.
+ * 
+ * It looks for the king and rook of a player and sets them into the variable referenced
+ * by 'king' and 'rook', respectively. Also, it computes the final positions of both
+ * pieces, and updates 'final_king_pos' and 'final_rook_pos' with those values.
+ */
 void castle(State* state, int castle_type, Piece** king, Piece** rook, int* final_king_pos, int* final_rook_pos)
 {
     int rook_x;
@@ -726,6 +781,9 @@ void castle(State* state, int castle_type, Piece** king, Piece** rook, int* fina
     }
 }
 
+/**
+ * Create a state object.
+ */
 State* create_state(bool turn, int white_castling, int black_castling, Piece* pawn_passant, bool can_passant)
 {
     State* state = (State*)malloc(sizeof(State));
@@ -742,6 +800,9 @@ State* create_state(bool turn, int white_castling, int black_castling, Piece* pa
     return state;
 }
 
+/** 
+ * @brief Creates a copy of a state object.
+ */
 State* create_copy(State* old_state)
 {
     State* new_state = (State*)malloc(sizeof(State));
@@ -817,6 +878,12 @@ State* create_copy(State* old_state)
     return new_state;
 }
 
+/**
+ * Deletes a piece object from a state.
+ * 
+ * First, it looks on the correct list of pieces the piece indicated, and then it
+ * proceeds to release its memory.
+ */
 void delete_piece(State* state, Piece* piece, bool player)
 {
     Piece* prev = player ? state->whitePieces : state->blackPieces;
@@ -866,6 +933,12 @@ void delete_piece(State* state, Piece* piece, bool player)
     }
 }
 
+/**
+ * Deletes a state object.
+ * 
+ * Deallocates the memory of the two pieces list from a state. Then, it also frees the
+ * memory from the state struct.
+ */
 void delete_state(State* state)
 {
     Piece* temp;
@@ -886,14 +959,29 @@ void delete_state(State* state)
     free(state);
 }
 
-// State
-
+/**
+ * Get the value attribute of a state object.
+ */
 int get_value(State* state)
 {
     return state->value;
 }
 
-// Not finished
+/**
+ * Computes the value of a given state:
+ *  -1=Lose
+ *   0=Draw
+ *   1=Win
+ * 
+ * First, it checks if the player's king is in checkmate. The function returns this result
+ * if 'check_posibilities' is false. Otherwise:
+ *  - Returns 'false' if the game is not ended.
+ *  - Returns 'true' if the game ends and sets the state's value to:
+ *      - -1, if the initial player (according to the configuration) loses,
+ *      - 0, if the current player doesn't have any possible movements and its not being
+ *      attacked, or the fifty-move rule is reached, or
+ *      - 1, if the initial player wins.
+ */
 bool calc_value(State* state, bool check_posibilities)
 {
     // Set players
@@ -1038,6 +1126,9 @@ bool calc_value(State* state, bool check_posibilities)
     }
 }
 
+/**
+ * Checks if the player's king is attacked after moving a piece.
+ */
 bool check_possible_attack(State* state, Piece* piece, int x, int y)
 {
     State* temp_state = create_copy(state);
@@ -1074,6 +1165,14 @@ bool check_possible_attack(State* state, Piece* piece, int x, int y)
     return false;
 }
 
+/**
+ * Checks if a certain space is being occupied by another piece.
+ * 
+ * It returns:
+ * - 2, if the space is being occupied by another piece of the player. 
+ * - 1, if the space is being occupied by a piece of the opponent player.
+ * - 0, if the space is unoccupied.
+ */
 int check_obstacle(State* state, int x, int y)
 {
     int obstacle = 1;
