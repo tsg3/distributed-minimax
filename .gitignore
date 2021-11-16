@@ -1,3 +1,4 @@
-/build/
+build/
+venv
 /bin/
 /.vscode
