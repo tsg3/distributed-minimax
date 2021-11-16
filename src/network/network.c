@@ -2,6 +2,17 @@
 
 int test(int argc, char** argv)
 {
+    FILE* fd;
+    if ((fd = fopen("/etc/hostname", "r")) == NULL)
+    {
+        perror("Error opening the file!");
+        return -1;
+    }
+
+    char hostname[7];
+    fread(hostname, 1, 7, fd);
+    fclose(fd);
+    
     int process_rank, cluster_size;
 
     MPI_Init(&argc, &argv);
@@ -9,17 +20,19 @@ int test(int argc, char** argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &process_rank);
 
     int number;
-    if (process_rank == 0)
+    if ((process_rank & 0b1) == 0)
     {
-        number = 69;
-        MPI_Send(&number, 1, MPI_INT, 1, 1, MPI_COMM_WORLD);
-        printf("Process %d | You sent this to P1: %d\n", process_rank, number);
+        number = 666;
+        MPI_Send(&number, 1, MPI_INT, process_rank + 1, 1, MPI_COMM_WORLD);
+        printf("[%s | Process %d] | You sent this to P%d: %d\n", 
+            hostname, process_rank, process_rank + 1, number);
     }
 
     else
     {
-        MPI_Recv(&number, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        printf("Process %d | P0 sent you this: %d\n", process_rank, number);
+        MPI_Recv(&number, 1, MPI_INT, process_rank - 1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        printf("[%s | Process %d] | P%d sent you this: %d\n", 
+            hostname, process_rank, process_rank - 1, number);
     }
 
     MPI_Finalize();
