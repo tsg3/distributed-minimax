@@ -2,6 +2,8 @@
 #define NETWORK_H_
 
 #include <stdio.h>
+#include <unistd.h>
+
 #include <mpi.h>
 
 int test(int, char**);
