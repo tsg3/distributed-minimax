@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <mpi.h>
 
@@ -28,10 +29,10 @@ int process_rank, cluster_size;
 
 char worker_status;
 int worker_ranks[3];
-int recv_buffers[3];
-MPI_Request request_structs[3];
 
-int request_buffer, response_buffer;
+char *request_buffer, *response_buffer;
+int request_len, response_len;
+
 bool network_initialized;
 bool finished_main;
 char worker_state;

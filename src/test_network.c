@@ -7,22 +7,24 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    responses_list = NULL;
-    network_initialized = false;
-    request_buffer = -1;
-    response_buffer = -1;
     finished_main = false;
-    worker_state = '0';
     pthread_mutex_init(&lock, NULL);
 
     if (node_id == '1')
     {
+        responses_list = NULL;
+        network_initialized = false;
         pthread_create(&network_thread_id, NULL, master_network_main, NULL);
         pthread_create(&minimax_thread_id, NULL, master_minimax_main, NULL);
     }
 
     else
     {
+        request_buffer = NULL;
+        response_buffer = NULL;
+        worker_state = '0';
+        request_len = 0;
+        response_len = 0;
         pthread_create(&network_thread_id, NULL, worker_network_main, NULL);
         pthread_create(&minimax_thread_id, NULL, worker_minimax_main, NULL);
     }
