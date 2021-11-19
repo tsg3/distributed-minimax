@@ -136,11 +136,25 @@ void* master_network_main()
         usleep(500000);
     }
 
-    char final_message = '0';
+    State* state;
+    int level;
+    test(&state, &level);
+    char* final_message = data_to_json(state, level);
+    int final_message_len = strlen(final_message);
 
-    MPI_Send(&final_message, 1, MPI_BYTE, worker_ranks[0], 0, MPI_COMM_WORLD);
-    MPI_Send(&final_message, 1, MPI_BYTE, worker_ranks[1], 0, MPI_COMM_WORLD);
-    MPI_Send(&final_message, 1, MPI_BYTE, worker_ranks[2], 0, MPI_COMM_WORLD);
+    // printf("[ID: %c | Process: %d] | Final message:\n%s\n", 
+    //     node_id, process_rank, final_message);
+
+    delete_state(state);
+
+    MPI_Send(final_message, final_message_len, MPI_BYTE, 
+        worker_ranks[0], 0, MPI_COMM_WORLD);
+    MPI_Send(final_message, final_message_len, MPI_BYTE, 
+        worker_ranks[1], 0, MPI_COMM_WORLD);
+    MPI_Send(final_message, final_message_len, MPI_BYTE, 
+        worker_ranks[2], 0, MPI_COMM_WORLD);
+    
+    free(final_message);
 
     printf("[ID: %c | Process: %d] | Finishing ... \n", node_id, process_rank);
 
@@ -175,6 +189,16 @@ void* worker_network_main()
                 finished_main = true;
                 pthread_mutex_unlock(&lock);
 
+                // printf("[ID: %c | Process: %d] | Got this from %d:\n%s\n", 
+                //     node_id, process_rank, status.MPI_SOURCE, buffer);
+                
+                State* state;
+                int level;
+                json_to_data(buffer, &state, &level); 
+                // This is how it gets 
+                //    the buffer data.
+
+                delete_state(state);
                 free(buffer);
                 break;
             }

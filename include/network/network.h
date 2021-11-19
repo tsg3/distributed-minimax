@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <string.h>
+#include <network/messages.h>
 
 #include <mpi.h>
 
