@@ -1,8 +1,8 @@
 ## cmake version
 cmake_minimum_required(VERSION 2.6)
 
-## cross-compiling environment
-set(CMAKE_C_COMPILER gcc)
+## cross-compiling environment [Testing]
+## set(CMAKE_C_COMPILER gcc)
 
 ## project name
 project(distributed-minimax)
@@ -12,6 +12,9 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+## include MPI include files
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
 ## add subdirectories
 add_subdirectory(src)
