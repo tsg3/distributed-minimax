@@ -316,13 +316,3 @@ int main()
 
     return 0;
 }
-
-// Piece* whitePieces;
-// Piece* blackPieces;
-// int value;
-// bool turn;
-// int white_castling;
-// int black_castling;
-// Piece* pawn_passant;
-// bool can_passant;
-// int fifty_rule;
