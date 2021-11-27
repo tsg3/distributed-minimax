@@ -1,6 +1,5 @@
 build/
-venv
-/bin/
-/.vscode
-build
-venv
+venv/
+bin/
+.vscode/
+file
