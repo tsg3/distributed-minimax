@@ -1,5 +1,5 @@
-/build/
-/bin/
-/.vscode
+build/
 venv/
+bin/
+.vscode/
 file
