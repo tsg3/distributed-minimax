@@ -159,6 +159,58 @@ back_propagation:
         resp = minmax(resp, possibility, level);
     }
 
+    while (1)
+    {
+        if (worker_available(true) == 1)
+        {
+            break;
+        }
+        usleep(500000);
+    }
+
+    if (node_id == '1')
+    {
+        response *temp_r = responses_list, *temp_r_prev = NULL;
+        while (temp_r != NULL)
+        {
+            // temp_r = responses_list;
+            // responses_list = temp_r->next;
+
+            // sum += temp_r->result;
+            // resp = minmax(resp, temp_r->, level);
+            // printf("[ID: %c | Process: %d] | 'sum' + %d = %d \n", 
+            //     node_id, process_rank, temp_r->result, sum);
+
+            // free(temp_r);
+            if (temp_r->level == level + 1)
+            {
+                resp = minmax(resp, temp_r->result, level);
+
+                if (temp_r_prev == NULL)
+                {
+                    responses_list = temp_r->next;
+                    free(temp_r);
+                    temp_r = responses_list;
+                }
+
+                else
+                {
+                    temp_r_prev->next = temp_r->next;
+                    free(temp_r);
+                    temp_r = temp_r_prev->next;
+                }
+            }
+
+            else
+            {
+                temp_r_prev = temp_r;
+                temp_r = temp_r->next;
+            }
+            // temp_r_prev = temp_r;
+            // temp_r = temp_r->next;
+        }
+    }
+
     if (resp == INT_MAX || resp == INT_MIN)
     {
         calc_value(state, true);
@@ -196,11 +248,25 @@ int calc_level_aux(State* state, int level, Piece* piece, int x, int y, char pro
 
         move_piece(copy, associated_piece, x, y, promotion);
         copy->turn = !copy->turn;
-        int possibility = calc_level(copy, level + 1);
+
+        int possibility, available;
+        if (node_id == '1' && (available = worker_available(false)) != -1)
+        {
+            request_worker(copy, level + 1, available);
+            delete_state(copy);
+            goto nu_value;
+        }
+        else
+        {
+            possibility = calc_level(copy, level + 1);
+        }
+
+        // int possibility = calc_level(copy, level + 1);
         delete_state(copy);
         return possibility;
     }
 
+nu_value:
     return level % 2 == 0 ? INT_MIN : INT_MAX;
 }
 
@@ -249,11 +315,25 @@ int calc_level_castle(State* state, int level, Piece* king, Piece* rook, int* ki
         }
 
         copy->turn = !copy->turn;
-        int possibility = calc_level(copy, level + 1);
+
+        int possibility, available;
+        if (node_id == '1' && (available = worker_available(false)) != -1)
+        {
+            request_worker(copy, level + 1, available);
+            delete_state(copy);
+            goto nu_value;
+        }
+        else
+        {
+            possibility = calc_level(copy, level + 1);
+        }
+
+        // int possibility = calc_level(copy, level + 1);
         delete_state(copy);
         return possibility;
     }
 
+nu_value:
     return level % 2 == 0 ? INT_MIN : INT_MAX;
 }
 

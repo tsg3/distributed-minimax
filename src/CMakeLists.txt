@@ -8,16 +8,16 @@ add_compile_options(-g)
 set(LIBRARIES pthread)
 
 ## Test network
-add_executable(test_network 
-    test_network.c 
-    network/network.c 
-    network/messages.c 
-    chess/chess.c
-    cJSON.c)
+# add_executable(test_network 
+#     test_network.c 
+#     network/network.c 
+#     network/messages.c 
+#     chess/chess.c
+#     cJSON.c)
 
-target_link_libraries(test_network ${MPI_C_LIBRARIES} ${LIBRARIES})
+# target_link_libraries(test_network ${MPI_C_LIBRARIES} ${LIBRARIES})
 
-install(TARGETS test_network DESTINATION bin)
+# install(TARGETS test_network DESTINATION bin)
 
 ## linking source files
 add_executable(test 
@@ -27,10 +27,12 @@ add_executable(test
     chess/chess.c 
     minimax/minimax.c 
     evaluation/evaluation.c
-    reports/reports.c)
+    reports/reports.c
+    network/network.c 
+    network/messages.c)
 
 ## linking libraries
-target_link_libraries(test ${LIBRARIES})
+target_link_libraries(test ${MPI_C_LIBRARIES} ${LIBRARIES})
 
 ## install executables
 install(TARGETS test DESTINATION bin)

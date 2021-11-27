@@ -10,6 +10,9 @@
 
 #include <chess/chess.h>
 #include <limits.h>
+#include <network/messages.h>
+
+char node_id;
 
 /** @fn init_chess_models
  * @brief Initiates variables of the chess models module.

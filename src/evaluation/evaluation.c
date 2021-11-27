@@ -32,7 +32,7 @@ void* eval_main()
 
     end_time();
 
-    pthread_exit(NULL);
+    return NULL;
 }
 
 /**

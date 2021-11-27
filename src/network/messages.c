@@ -224,6 +224,92 @@ void json_to_data(char* buffer, State** state_ptr, int* level_ptr)
     cJSON_Delete(message);
 }
 
+char* resp_to_json(int res, int level)
+{
+    cJSON* object = cJSON_CreateObject();
+
+    cJSON_AddNumberToObject(object, "r", res);
+    cJSON_AddNumberToObject(object, "l", level);
+
+    char* buffer = cJSON_Print(object);
+
+    cJSON_Delete(object);
+    return buffer;
+}
+
+void json_to_resp(char* buffer, int* res_ptr, int* level_ptr)
+{
+    cJSON* message = cJSON_Parse(buffer);
+
+    const cJSON* res_recv = cJSON_GetObjectItemCaseSensitive(message, "r");
+    *res_ptr = res_recv->valueint;
+
+    const cJSON* level_recv = cJSON_GetObjectItemCaseSensitive(message, "l");
+    *level_ptr = level_recv->valueint;
+
+    cJSON_Delete(message);
+}
+
+int worker_available(bool mode)
+{
+    int res = -1;
+    pthread_mutex_lock(&lock);
+
+    if (mode)
+    {
+        res = BIT_CHECK(worker_status, 0) == 0 &&
+            BIT_CHECK(worker_status, 1) == 0 &&
+            BIT_CHECK(worker_status, 2) == 0 ? 1 : 0;
+    }
+
+    else
+    {
+        if (BIT_CHECK(worker_status, 0) == 0)
+        {
+            res = 0;
+        }
+
+        else if (BIT_CHECK(worker_status, 1) == 0)
+        {
+            res = 1;
+        }
+
+        else if (BIT_CHECK(worker_status, 2) == 0)
+        {
+            res = 2;
+        }
+    }
+
+    pthread_mutex_unlock(&lock);
+    return res;
+}
+
+void request_worker(State* state, int level, int pos)
+{
+    /** Call function to format the message into the char array buffer.
+     *  [This is a test] 
+     */
+    // int temp = value, buff_size = 1; // Actual size
+    // while (temp != 0)
+    // {
+    //     temp /= 10;
+    //     buff_size++;
+    // }
+    // char* buffer = (char*)malloc(sizeof(char) * buff_size);
+    // snprintf(buffer, buff_size, "%d", value);
+    char* buffer = data_to_json(state, level);
+    int buff_size = strlen(buffer);
+    /** --------------------------------------------------------------- */
+
+    pthread_mutex_lock(&lock);
+
+    BIT_SET(worker_status, pos);
+    MPI_Send(buffer, buff_size, MPI_BYTE, worker_ranks[pos], 1, MPI_COMM_WORLD);
+
+    pthread_mutex_unlock(&lock);
+    free(buffer);
+}
+
 /** TEST */
 void test(State** state_ptr, int* level_ptr)
 {
